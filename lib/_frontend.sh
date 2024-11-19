@@ -16,7 +16,7 @@ frontend_node_dependencies() {
 
   sudo su - deploy <<EOF
   cd /home/deploy/${instancia_add}/frontend
-  npm install --force
+  npm install
 EOF
 
   sleep 2
@@ -36,7 +36,7 @@ frontend_node_build() {
 
   sudo su - deploy <<EOF
   cd /home/deploy/${instancia_add}/frontend
-  NODE_OPTIONS=--openssl-legacy-provider npm run build
+  npm run build
 EOF
 
   sleep 2
@@ -61,7 +61,7 @@ frontend_update() {
   cd /home/deploy/${empresa_atualizar}/frontend
   npm install
   rm -rf build
-  NODE_OPTIONS=--openssl-legacy-provider npm run build
+  npm run build
   pm2 start ${empresa_atualizar}-frontend
   pm2 save
 EOF
@@ -126,10 +126,10 @@ frontend_start_pm2() {
 
   sleep 2
 
-  sudo su - root <<EOF
+  sudo su - deploy <<EOF
   cd /home/deploy/${instancia_add}/frontend
   pm2 start server.js --name ${instancia_add}-frontend
-  pm2 save --force
+  pm2 save
 EOF
 
  sleep 2

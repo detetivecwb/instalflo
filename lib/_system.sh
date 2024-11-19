@@ -15,7 +15,7 @@ system_create_user() {
   sleep 2
 
   sudo su - root <<EOF
-  useradd -m -p $(openssl passwd -crypt ${deploy_password}) -s /bin/bash -G sudo deploy
+  useradd -m -p $(openssl passwd -crypt ${mysql_root_password}) -s /bin/bash -G sudo deploy
   usermod -aG sudo deploy
 EOF
 
@@ -27,59 +27,19 @@ EOF
 # Arguments:
 #   None
 #######################################
-system_mv_folder() {
+system_git_clone() {
   print_banner
-  printf "${WHITE} 💻 Fazendo download do código...${GRAY_LIGHT}"
+  printf "${WHITE} 💻 Fazendo download do código Equipechat...${GRAY_LIGHT}"
   printf "\n\n"
 
-
-  sleep 2
-
-  sudo su - root <<EOF
-  cp "${PROJECT_ROOT}"/whaticket.zip /home/deploy/${instancia_add}/
-EOF
-  # git clone ${link_git} /home/deploy/${instancia_add}/
-
-  sleep 2
-}
-
-#######################################
-# creates folder
-# Arguments:
-#   None
-#######################################
-system_create_folder() {
-  print_banner
-  printf "${WHITE} 💻 Agora, vamos criar a nova pasta...${GRAY_LIGHT}"
-  printf "\n\n"
-
-  sleep 2
-
-  sudo su - deploy <<EOF 
-  mkdir ${instancia_add}
-EOF
-
-  sleep 2
-}
-
-#######################################
-# unzip whaticket
-# Arguments:
-#   None
-#######################################
-system_unzip_whaticket() {
-  print_banner
-  printf "${WHITE} 💻 Fazendo unzip do Agilizachat...${GRAY_LIGHT}"
-  printf "\n\n"
 
   sleep 2
 
   sudo su - deploy <<EOF
-  unzip /home/deploy/${instancia_add}/whaticket.zip -d /home/deploy/${instancia_add}
-  rm whaticket.zip
+  git clone ${link_git} /home/deploy/${instancia_add}/
 EOF
 
-  sleep
+  sleep 2
 }
 
 #######################################
@@ -89,7 +49,7 @@ EOF
 #######################################
 system_update() {
   print_banner
-  printf "${WHITE} 💻 Vamos atualizar o sistema Agilizachat...${GRAY_LIGHT}"
+  printf "${WHITE} 💻 Vamos atualizar o sistema Equipechat...${GRAY_LIGHT}"
   printf "\n\n"
 
   sleep 2
@@ -97,10 +57,6 @@ system_update() {
   sudo su - root <<EOF
   apt -y update
   sudo apt-get install -y libxshmfence-dev libgbm-dev wget unzip fontconfig locales gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils
-  sudo apt update && sudo apt upgrade -y
-  apt install software-properties-common -y
-  sudo apt-get install -y libgbm-dev wget unzip fontconfig locales gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils git
-  sudo apt update && sudo apt install zip unzip -y
 EOF
 
   sleep 2
@@ -115,7 +71,7 @@ EOF
 #######################################
 deletar_tudo() {
   print_banner
-  printf "${WHITE} 💻 Vamos deletar o Agilizachat...${GRAY_LIGHT}"
+  printf "${WHITE} 💻 Vamos deletar o Equipechat...${GRAY_LIGHT}"
   printf "\n\n"
 
   sleep 2
@@ -161,7 +117,7 @@ EOF
 #######################################
 configurar_bloqueio() {
   print_banner
-  printf "${WHITE} 💻 Vamos bloquear o Agilizachat...${GRAY_LIGHT}"
+  printf "${WHITE} 💻 Vamos bloquear o Equipechat...${GRAY_LIGHT}"
   printf "\n\n"
 
   sleep 2
@@ -188,7 +144,7 @@ EOF
 #######################################
 configurar_desbloqueio() {
   print_banner
-  printf "${WHITE} 💻 Vamos Desbloquear o Agilizachat...${GRAY_LIGHT}"
+  printf "${WHITE} 💻 Vamos Desbloquear o Equipechat...${GRAY_LIGHT}"
   printf "\n\n"
 
   sleep 2
@@ -214,7 +170,7 @@ EOF
 #######################################
 configurar_dominio() {
   print_banner
-  printf "${WHITE} 💻 Vamos Alterar os Dominios do Agilizachat...${GRAY_LIGHT}"
+  printf "${WHITE} 💻 Vamos Alterar os Dominios do Equipechat...${GRAY_LIGHT}"
   printf "\n\n"
 
 sleep 2
@@ -319,13 +275,13 @@ EOF
 #######################################
 system_node_install() {
   print_banner
-  printf "${WHITE} 💻 Instalando node.js...${GRAY_LIGHT}"
+  printf "${WHITE} 💻 Instalando nodejs...${GRAY_LIGHT}"
   printf "\n\n"
 
   sleep 2
 
   sudo su - root <<EOF
-  curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+  curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
   apt-get install -y nodejs
   sleep 2
   npm install -g npm@latest
@@ -347,7 +303,7 @@ EOF
 #######################################
 system_docker_install() {
   print_banner
-  printf "${WHITE} 💻 Instalando redis...${GRAY_LIGHT}"
+  printf "${WHITE} 💻 Instalando docker...${GRAY_LIGHT}"
   printf "\n\n"
 
   sleep 2
@@ -565,7 +521,7 @@ EOF
 #######################################
 system_certbot_setup() {
   print_banner
-  printf "${WHITE} 💻 Configurando certbot...${GRAY_LIGHT}"
+  printf "${WHITE} 💻 Configurando certbot, Já estamos perto do fim...${GRAY_LIGHT}"
   printf "\n\n"
 
   sleep 2

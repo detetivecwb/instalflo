@@ -1,20 +1,20 @@
 #!/bin/bash
 
-# get_mysql_root_password() {
+get_mysql_root_password() {
   
-#   print_banner
-#   printf "${WHITE} 💻 Insira senha para o usuario Deploy e Banco de Dados (Não utilizar caracteres especiais):${GRAY_LIGHT}"
-#   printf "\n\n"
-#   read -p "> " mysql_root_password
-# }
+  print_banner
+  printf "${WHITE} 💻 Insira senha para o usuario Deploy e Banco de Dados (Não utilizar caracteres especiais):${GRAY_LIGHT}"
+  printf "\n\n"
+  read -p "> " mysql_root_password
+}
 
-# get_link_git() {
+get_link_git() {
   
-#   print_banner
-#   printf "${WHITE} 💻 Insira o link do Github da sua instalação que deseja instalar:${GRAY_LIGHT}"
-#   printf "\n\n"
-#   read -p "> " link_git
-# }
+  print_banner
+  printf "${WHITE} 💻 Insira o link do GITHUB do seu Equipechat que deseja instalar:${GRAY_LIGHT}"
+  printf "\n\n"
+  read -p "> " link_git
+}
 
 get_instancia_add() {
   
@@ -156,8 +156,8 @@ get_alter_backend_port() {
 
 
 get_urls() {
-  # get_mysql_root_password
-  # get_link_git
+  get_mysql_root_password
+  get_link_git
   get_instancia_add
   get_max_whats
   get_max_user
@@ -168,11 +168,11 @@ get_urls() {
   get_redis_port
 }
 
-# software_update() {
-#   get_empresa_atualizar
-#   frontend_update
-#   backend_update
-# }
+software_update() {
+  get_empresa_atualizar
+  frontend_update
+  backend_update
+}
 
 software_delete() {
   get_empresa_delete
@@ -201,24 +201,24 @@ software_dominio() {
 inquiry_options() {
   
   print_banner
-  printf "${WHITE} 💻 Bem vindo(a) ao Sistema Agilizachat, Selecione abaixo a proxima ação!${GRAY_LIGHT}"
+  printf "${WHITE} 💻 Bem vindo(a) ao Gerenciador Equipechat - Atendimento sem limites, selecione abaixo a proxima ação!${GRAY_LIGHT}"
   printf "\n\n"
-  printf "   [1] Instalar \n"
-  # printf "   [1] Atualizar \n"
-  printf "   [2] Deletar \n"
-  printf "   [3] Bloquear \n"
-  printf "   [4] Desbloquear \n"
-  printf "   [5] Alter. dominio \n"
+  printf "   [0] Instalar Equipechat\n"
+  printf "   [1] Atualizar Equipechat\n"
+  printf "   [2] Deletar Equipechat\n"
+  printf "   [3] Bloquear Equipechat\n"
+  printf "   [4] Desbloquear Equipechat\n"
+  printf "   [5] Alter. dominio Equipechat\n"
   printf "\n"
   read -p "> " option
 
   case "${option}" in
-    1) get_urls ;;
+    0) get_urls ;;
 
-    # 1) 
-    #   software_update 
-    #   exit
-    #   ;;
+    1) 
+      software_update 
+      exit
+      ;;
 
     2) 
       software_delete 

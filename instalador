@@ -41,6 +41,7 @@ system_update
 system_node_install
 system_pm2_install
 system_docker_install
+system_puppeteer_dependencies
 system_snapd_install
 system_nginx_install
 system_certbot_install
@@ -49,9 +50,7 @@ system_certbot_install
 system_create_user
 
 # backend related
-system_create_folder
-system_mv_folder
-system_unzip_whaticket
+system_git_clone
 backend_set_env
 backend_redis_create
 backend_node_dependencies
