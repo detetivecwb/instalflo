@@ -14,20 +14,12 @@ backend_redis_create() {
   sleep 2
 
   sudo su - root <<EOF
-  usermod -aG docker deploy
-  docker run --name redis-${instancia_add} -p ${redis_port}:6379 --restart always --detach redis redis-server --requirepass ${redis_pass}
-
-  sleep 2
-  sudo su - postgres <<EOF
-    createdb ${instancia_add};
-    psql
-    CREATE USER ${instancia_add} SUPERUSER INHERIT CREATEDB CREATEROLE;
-    ALTER USER ${instancia_add} PASSWORD '${db_pass}';
-    \q
-    exit
+  usermod -aG docker deploywhaticketplus
+  docker run --name redis-redis -p 6379:6379 --restart always --detach redis redis-server --requirepass ${db_pass}
+  
 EOF
 
-sleep 2
+ sleep 2
 
 }
 
@@ -53,42 +45,90 @@ backend_set_env() {
   frontend_url=${frontend_url%%/*}
   frontend_url=https://$frontend_url
 
-sudo su - deploy << EOF
-  cat <<[-]EOF > /home/deploy/${instancia_add}/backend/.env
+sudo su - deploywhaticketplus << EOF
+  cat <<[-]EOF > /home/deploywhaticketplus/whaticket/backend/.env
 NODE_ENV=
+
+# VARIÁVEIS DE SISTEMA
 BACKEND_URL=${backend_url}
-FRONTEND_URL=${frontend_url}
+ALLOWED_ORIGINS=${frontend_url}
 PROXY_PORT=443
-PORT=${backend_port}
+PORT=8080
 
-DB_HOST=localhost
+# CREDENCIAIS BANCO DE DADOS
+DB_TIMEZONE=-03:00
 DB_DIALECT=postgres
+DB_HOST=localhost
+DB_USER=postgres
+DB_PASS=2000@23
+DB_NAME=whaticketwhaticketplus
 DB_PORT=5432
-DB_USER=${instancia_add}
-DB_PASS=${db_pass}
-DB_NAME=${instancia_add}
+DB_DEBUG=false
+DB_BACKUP=/www/wwwroot/backup
 
-JWT_SECRET=${jwt_secret}
-JWT_REFRESH_SECRET=${jwt_refresh_secret}
+JWT_SECRET=53pJTvkL9T6q2jYFFKwXgvLAgQahwbb/BM0opll5NZM=
+JWT_REFRESH_SECRET=1/n/QnJtfUphUd9CrXjaxRw+jSAxtRIJwFroFmqrRXY=
 
-REDIS_URI=redis://:${redis_pass}@127.0.0.1:${redis_port}
+REDIS_URI=redis://:${db_pass}@127.0.0.1:6379
 REDIS_OPT_LIMITER_MAX=1
 REGIS_OPT_LIMITER_DURATION=3000
 
-USER_LIMIT=${max_user}
-CONNECTIONS_LIMIT=${max_whats}
-CLOSED_SEND_BY_ME=true
+#MASTER KEY PARA TODOS
+MASTER_KEY=
 
-# GERENCIANET_SANDBOX=false
-# GERENCIANET_CLIENT_ID=Client_Id_Gerencianet
-# GERENCIANET_CLIENT_SECRET=Client_Secret_Gerencianet
-# GERENCIANET_PIX_CERT=certificado-Gerencianet
-# GERENCIANET_PIX_KEY=chave pix gerencianet
+ENV_TOKEN=
+WHATSAPP_UNREADS=
 
-# para usar GERENCIANET Em backend\certs
-# Salvar o certificado no formato .p12
+# FACEBOOK/INSTAGRAM CONFIGS
+VERIFY_TOKEN=Whaticket
+FACEBOOK_APP_ID=
+FACEBOOK_APP_SECRET=
+
+# BROWSER SETTINGS
+BROWSER_CLIENT=
+BROWSER_NAME=Chrome
+BROWSER_VERSION=10.0
+VIEW_QRCODE_TERMINAL=true
+
+# EMAIL
+MAIL_HOST=""
+MAIL_USER=""
+MAIL_PASS=""
+MAIL_FROM=""
+MAIL_PORT=587
+
+GERENCIANET_SANDBOX=false
+GERENCIANET_CLIENT_ID=
+GERENCIANET_CLIENT_SECRET=
+GERENCIANET_PIX_CERT=
+GERENCIANET_PIX_KEY=
+
+OPENAI_API_KEY=
+
 
 [-]EOF
+EOF
+
+  sleep 2
+}
+
+#######################################
+# install_chrome
+# Arguments:
+#   None
+#######################################
+backend_chrome_install() {
+  print_banner
+  printf "${WHITE} 💻 Vamos instalar o Chrome...${GRAY_LIGHT}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+  wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+  apt-get update
+  apt-get install -y google-chrome-stable
 EOF
 
   sleep 2
@@ -106,62 +146,9 @@ backend_node_dependencies() {
 
   sleep 2
 
-  sudo su - deploy <<EOF
-  cd /home/deploy/${instancia_add}/backend
-  npm install
-  npm install @whiskeysockets/baileys@6.6.0
-EOF
-
-  sleep 2
-}
-
-#######################################
-# compiles backend code
-# Arguments:
-#   None
-#######################################
-backend_node_build() {
-  print_banner
-  printf "${WHITE} 💻 Compilando o código do backend...${GRAY_LIGHT}"
-  printf "\n\n"
-
-  sleep 2
-
-  sudo su - deploy <<EOF
-  cd /home/deploy/${instancia_add}/backend
-  npm run build
-EOF
-
-  sleep 2
-}
-
-#######################################
-# updates frontend code
-# Arguments:
-#   None
-#######################################
-backend_update() {
-  print_banner
-  printf "${WHITE} 💻 Atualizando o backend...${GRAY_LIGHT}"
-  printf "\n\n"
-
-  sleep 2
-
-  sudo su - deploy <<EOF
-  cd /home/deploy/${empresa_atualizar}
-  pm2 stop ${empresa_atualizar}-backend
-  git pull
-  cd /home/deploy/${empresa_atualizar}/backend
+  sudo su - deploywhaticketplus <<EOF
+  cd /home/deploywhaticketplus/whaticket/backend
   npm install --force
-  npm update -f
-  npm install @types/fs-extra
-  rm -rf dist 
-  npm run build
-  npx sequelize db:migrate
-  npx sequelize db:migrate
-  npx sequelize db:seed
-  pm2 start ${empresa_atualizar}-backend
-  pm2 save 
 EOF
 
   sleep 2
@@ -179,9 +166,8 @@ backend_db_migrate() {
 
   sleep 2
 
-  sudo su - deploy <<EOF
-  cd /home/deploy/${instancia_add}/backend
-  npx sequelize db:migrate
+  sudo su - deploywhaticketplus <<EOF
+  cd /home/deploywhaticketplus/whaticket/backend
   npx sequelize db:migrate
 EOF
 
@@ -200,8 +186,8 @@ backend_db_seed() {
 
   sleep 2
 
-  sudo su - deploy <<EOF
-  cd /home/deploy/${instancia_add}/backend
+  sudo su - deploywhaticketplus <<EOF
+  cd /home/deploywhaticketplus/whaticket/backend
   npx sequelize db:seed:all
 EOF
 
@@ -221,10 +207,9 @@ backend_start_pm2() {
 
   sleep 2
 
-  sudo su - root <<EOF
-  cd /home/deploy/${instancia_add}/backend
-  pm2 start dist/server.js --name ${instancia_add}-backend
-  pm2 save --force
+  sudo su - deploywhaticketplus <<EOF
+  cd /home/deploywhaticketplus/whaticket/backend
+  pm2 start whaticketplus/server.js --name whaticket-backend
 EOF
 
   sleep 2
@@ -245,11 +230,13 @@ backend_nginx_setup() {
   backend_hostname=$(echo "${backend_url/https:\/\/}")
 
 sudo su - root << EOF
-cat > /etc/nginx/sites-available/${instancia_add}-backend << 'END'
+
+cat > /etc/nginx/sites-available/whaticket-backend << 'END'
 server {
   server_name $backend_hostname;
+
   location / {
-    proxy_pass http://127.0.0.1:${backend_port};
+    proxy_pass http://127.0.0.1:8080;
     proxy_http_version 1.1;
     proxy_set_header Upgrade \$http_upgrade;
     proxy_set_header Connection 'upgrade';
@@ -261,7 +248,8 @@ server {
   }
 }
 END
-ln -s /etc/nginx/sites-available/${instancia_add}-backend /etc/nginx/sites-enabled
+
+ln -s /etc/nginx/sites-available/whaticket-backend /etc/nginx/sites-enabled
 EOF
 
   sleep 2
