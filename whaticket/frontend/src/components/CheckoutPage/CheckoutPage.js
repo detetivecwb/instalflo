@@ -19,44 +19,50 @@ import toastError from "../../errors/toastError";
 import { toast } from "react-toastify";
 import { AuthContext } from "../../context/Auth/AuthContext";
 
+
 import validationSchema from "./FormModel/validationSchema";
 import checkoutFormModel from "./FormModel/checkoutFormModel";
 import formInitialValues from "./FormModel/formInitialValues";
 
 import useStyles from "./styles";
+import Invoices from "../../pages/Financeiro";
+
 
 export default function CheckoutPage(props) {
   const steps = ["Dados", "Personalizar", "Revisar"];
   const { formId, formField } = checkoutFormModel;
-
+  
+  
+  
   const classes = useStyles();
   const [activeStep, setActiveStep] = useState(1);
   const [datePayment, setDatePayment] = useState(null);
   const [invoiceId, setinvoiceId] = useState(props.Invoice.id);
   const currentValidationSchema = validationSchema[activeStep];
   const isLastStep = activeStep === steps.length - 1;
-  const { user, socket } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
 
-  function _renderStepContent(step, setFieldValue, setActiveStep, values) {
+function _renderStepContent(step, setFieldValue, setActiveStep, values ) {
 
-    switch (step) {
-      case 0:
-        return <AddressForm formField={formField} values={values} setFieldValue={setFieldValue} />;
-      case 1:
-        return <PaymentForm
-          formField={formField}
-          setFieldValue={setFieldValue}
-          setActiveStep={setActiveStep}
-          activeStep={step}
-          invoiceId={invoiceId}
-          values={values}
-        />;
-      case 2:
-        return <ReviewOrder />;
-      default:
-        return <div>Not Found</div>;
-    }
+  switch (step) {
+    case 0:
+      return <AddressForm formField={formField} values={values} setFieldValue={setFieldValue}  />;
+    case 1:
+      return <PaymentForm 
+      formField={formField} 
+      setFieldValue={setFieldValue} 
+      setActiveStep={setActiveStep} 
+      activeStep={step} 
+      invoiceId={invoiceId}
+      values={values}
+      />;
+    case 2:
+      return <ReviewOrder />;
+    default:
+      return <div>Not Found</div>;
   }
+}
+
 
   async function _submitForm(values, actions) {
     try {
@@ -122,7 +128,7 @@ export default function CheckoutPage(props) {
         ) : (
           <Formik
             initialValues={{
-              ...user,
+              ...user, 
               ...formInitialValues
             }}
             validationSchema={currentValidationSchema}
@@ -133,7 +139,7 @@ export default function CheckoutPage(props) {
                 {_renderStepContent(activeStep, setFieldValue, setActiveStep, values)}
 
                 <div className={classes.buttons}>
-                  {activeStep !== 1 && activeStep !== 0 && (
+                  {activeStep !== 1 && (
                     <Button onClick={_handleBack} className={classes.button}>
                       VOLTAR
                     </Button>

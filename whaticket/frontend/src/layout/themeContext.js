@@ -1,12 +1,5 @@
 import React from "react";
 
-const ColorModeContext = React.createContext({
-    toggleColorMode: () => { },
-    setPrimaryColorLight: (_) => { },
-    setPrimaryColorDark: (_) => { },
-    setAppLogoLight: (_) => { },
-    setAppLogoDark: (_) => { },
-    setAppLogoFavicon: (_) => { },
-});
+const ColorModeContext = React.createContext({ toggleColorMode: () => {} });
 
 export default ColorModeContext;

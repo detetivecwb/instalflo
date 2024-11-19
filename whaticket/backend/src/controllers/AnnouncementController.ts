@@ -67,11 +67,10 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
   });
 
   const io = getIO();
-  io.of(String(companyId))
-    .emit(`company-announcement`, {
-      action: "create",
-      record
-    });
+  io.emit(`company-announcement`, {
+    action: "create",
+    record
+  });
 
   return res.status(200).json(record);
 };
@@ -89,7 +88,7 @@ export const update = async (
   res: Response
 ): Promise<Response> => {
   const data = req.body as StoreData;
-  const { companyId } = req.user;
+
   const schema = Yup.object().shape({
     title: Yup.string().required()
   });
@@ -108,11 +107,10 @@ export const update = async (
   });
 
   const io = getIO();
-  io.of(String(companyId))
-    .emit(`company-announcement`, {
-      action: "update",
-      record
-    });
+  io.emit(`company-announcement`, {
+    action: "update",
+    record
+  });
 
   return res.status(200).json(record);
 };
@@ -127,11 +125,10 @@ export const remove = async (
   await DeleteService(id);
 
   const io = getIO();
-  io.of(String(companyId))
-    .emit(`company-announcement`, {
-      action: "delete",
-      id
-    });
+  io.to(`company-${companyId}-mainchannel`).emit(`company-${companyId}-announcement`, {
+    action: "delete",
+    id
+  });
 
   return res.status(200).json({ message: "Announcement deleted" });
 };
@@ -151,7 +148,6 @@ export const mediaUpload = async (
   res: Response
 ): Promise<Response> => {
   const { id } = req.params;
-  const { companyId } = req.user;
   const files = req.files as Express.Multer.File[];
   const file = head(files);
 
@@ -159,17 +155,16 @@ export const mediaUpload = async (
     const announcement = await Announcement.findByPk(id);
 
     await announcement.update({
-      mediaPath: file.filename.replace('/', '-'),
-      mediaName: file.originalname.replace('/', '-')
+      mediaPath: file.filename,
+      mediaName: file.originalname
     });
     await announcement.reload();
 
     const io = getIO();
-    io.of(String(companyId))
-      .emit(`company-announcement`, {
-        action: "update",
-        record: announcement
-      });
+    io.emit(`company-announcement`, {
+      action: "update",
+      record: announcement
+    });
 
     return res.send({ mensagem: "Mensagem enviada" });
   } catch (err: any) {
@@ -182,14 +177,11 @@ export const deleteMedia = async (
   res: Response
 ): Promise<Response> => {
   const { id } = req.params;
-  const { companyId } = req.user;
+
   try {
     const announcement = await Announcement.findByPk(id);
-
-    const filePath = path.resolve("public", "announcements", announcement.mediaPath);
-
+    const filePath = path.resolve("public", announcement.mediaPath);
     const fileExists = fs.existsSync(filePath);
-
     if (fileExists) {
       fs.unlinkSync(filePath);
     }
@@ -201,11 +193,10 @@ export const deleteMedia = async (
     await announcement.reload();
 
     const io = getIO();
-    io.of(String(companyId))
-      .emit(`company-announcement`, {
-        action: "update",
-        record: announcement
-      });
+    io.emit(`company-announcement`, {
+      action: "update",
+      record: announcement
+    });
 
     return res.send({ mensagem: "Arquivo excluído" });
   } catch (err: any) {

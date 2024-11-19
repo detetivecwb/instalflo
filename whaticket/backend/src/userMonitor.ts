@@ -3,7 +3,7 @@ import * as Sentry from "@sentry/node";
 import { QueryTypes } from "sequelize";
 import { isNil } from "lodash";
 
-import logger from "./utils/logger";
+import { logger } from "./utils/logger";
 import sequelize from "./database";
 import User from "./models/User";
 const connection = process.env.REDIS_URI || "";

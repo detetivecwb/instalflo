@@ -1,10 +1,8 @@
 import { Op } from "sequelize";
 import * as Yup from "yup";
 import AppError from "../../errors/AppError";
-import Chatbot from "../../models/Chatbot";
 import Queue from "../../models/Queue";
 import ShowQueueService from "./ShowQueueService";
-import User from "../../models/User";
 
 interface QueueData {
   name?: string;
@@ -12,13 +10,9 @@ interface QueueData {
   greetingMessage?: string;
   outOfHoursMessage?: string;
   schedules?: any[];
-  chatbots?: Chatbot[];
   orderQueue?: number;
-  ativarRoteador?: boolean;
-  tempoRoteador: number;
-  integrationId?: number | null;
-  fileListId?: number | null;
-  closeTicket?: boolean;
+  integrationId?: number;
+  promptId?: number;
 }
 
 const UpdateQueueService = async (
@@ -26,7 +20,7 @@ const UpdateQueueService = async (
   queueData: QueueData,
   companyId: number
 ): Promise<Queue> => {
-  const { color, name, chatbots } = queueData;
+  const { color, name } = queueData;
 
   const queueSchema = Yup.object().shape({
     name: Yup.string()
@@ -81,42 +75,8 @@ const UpdateQueueService = async (
     throw new AppError("Não é permitido alterar registros de outra empresa");
   }
 
-  if (chatbots) {
-    await Promise.all(
-      chatbots.map(async bot => {
-        await Chatbot.upsert({ ...bot, queueId: queue.id });
-      })
-    );
-
-    await Promise.all(
-      queue.chatbots.map(async oldBot => {
-        const stillExists = chatbots.findIndex(bot => bot.id === oldBot.id);
-
-        if (stillExists === -1) {
-          await Chatbot.destroy({ where: { id: oldBot.id } });
-        }
-      })
-    );
-  }
   await queue.update(queueData);
 
-  await queue.reload({
-    include: [
-      {
-        model: Chatbot,
-        as: "chatbots",
-        include: [
-          {
-            model: User,
-            as: "user"
-          },
-        ],
-        // attributes: ["id", "name", "greetingMessage"],
-        order: [[{ model: Chatbot, as: "chatbots" }, "id", "asc"], ["id", "ASC"]]
-      }
-    ],
-    order: [[{ model: Chatbot, as: "chatbots" }, "id", "asc"], ["id", "ASC"]]
-  });
   return queue;
 };
 

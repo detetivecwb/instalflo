@@ -14,8 +14,7 @@ import CampaignShipping from "./CampaignShipping";
 import Company from "./Company";
 import ContactList from "./ContactList";
 import Whatsapp from "./Whatsapp";
-import User from "./User";
-import Queue from "./Queue";
+import Files from "./Files";
 
 @Table({ tableName: "Campaigns" })
 class Campaign extends Model<Campaign> {
@@ -102,28 +101,15 @@ class Campaign extends Model<Campaign> {
   @BelongsTo(() => Whatsapp)
   whatsapp: Whatsapp;
 
+  @ForeignKey(() => Files)
+  @Column
+  fileListId: number;
+
+  @BelongsTo(() => Files)
+  fileList: Files;
+
   @HasMany(() => CampaignShipping)
   shipping: CampaignShipping[];
-
-  @ForeignKey(() => User)
-  @Column
-  userId: number;
-
-  @BelongsTo(() => User)
-  user: User;
-
-  @ForeignKey(() => Queue)
-  @Column
-  queueId: number;
-
-  @BelongsTo(() => Queue)
-  queue: Queue;
-
-  @Column({ defaultValue: "closed" })
-  statusTicket: string;
-
-  @Column({ defaultValue: "disabled" })
-  openTicket: string;
 }
 
 export default Campaign;

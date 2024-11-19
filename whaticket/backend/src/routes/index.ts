@@ -15,6 +15,7 @@ import ticketNoteRoutes from "./ticketNoteRoutes";
 import quickMessageRoutes from "./quickMessageRoutes";
 import helpRoutes from "./helpRoutes";
 import dashboardRoutes from "./dashboardRoutes";
+import queueOptionRoutes from "./queueOptionRoutes";
 import scheduleRoutes from "./scheduleRoutes";
 import tagRoutes from "./tagRoutes";
 import contactListRoutes from "./contactListRoutes";
@@ -23,35 +24,18 @@ import campaignRoutes from "./campaignRoutes";
 import campaignSettingRoutes from "./campaignSettingRoutes";
 import announcementRoutes from "./announcementRoutes";
 import chatRoutes from "./chatRoutes";
-import queueIntegrationRoutes from "./queueIntegrationRoutes";
-import chatBotRoutes from "./chatBotRoutes";
-import webHookRoutes from "./webHookRoutes";
-import subScriptionRoutes from "./subScriptionRoutes";
 import invoiceRoutes from "./invoicesRoutes";
-import apiRoutes from "./apiRoutes";
-import versionRouter from "./versionRoutes";
-import filesRoutes from "./filesRoutes";
-import queueOptionRoutes from "./queueOptionRoutes";
+import subscriptionRoutes from "./subScriptionRoutes";
 import ticketTagRoutes from "./ticketTagRoutes";
-import apiCompanyRoutes from "./api/apiCompanyRoutes";
-import apiContactRoutes from "./api/apiContactRoutes";
-import apiMessageRoutes from "./api/apiMessageRoutes";
-import companySettingsRoutes from "./companySettingsRoutes";
-
+import filesRoutes from "./filesRoutes";
 import promptRoutes from "./promptRouter";
-import statisticsRoutes from "./statisticsRoutes";
-import scheduleMessageRoutes from "./ScheduledMessagesRoutes";
-import flowDefaultRoutes from "./flowDefaultRoutes";
-import webHook from "./webHookRoutes";
-import flowBuilder from "./flowBuilderRoutes";
-import flowCampaignRoutes from "./flowCampaignRoutes";
-
-
+import queueIntegrationRoutes from "./queueIntegrationRoutes";
+import forgotsRoutes from "./forgotPasswordRoutes";
+import versionRouter from "./versionRoutes";
 const routes = Router();
 
 routes.use(userRoutes);
 routes.use("/auth", authRoutes);
-routes.use("/api/messages", apiRoutes);
 routes.use(settingRoutes);
 routes.use(contactRoutes);
 routes.use(ticketRoutes);
@@ -66,6 +50,7 @@ routes.use(ticketNoteRoutes);
 routes.use(quickMessageRoutes);
 routes.use(helpRoutes);
 routes.use(dashboardRoutes);
+routes.use(queueOptionRoutes);
 routes.use(scheduleRoutes);
 routes.use(tagRoutes);
 routes.use(contactListRoutes);
@@ -74,28 +59,13 @@ routes.use(campaignRoutes);
 routes.use(campaignSettingRoutes);
 routes.use(announcementRoutes);
 routes.use(chatRoutes);
-routes.use(chatBotRoutes);
-routes.use("/webhook", webHookRoutes);
-routes.use(subScriptionRoutes);
+routes.use(subscriptionRoutes);
 routes.use(invoiceRoutes);
-routes.use(versionRouter);
-routes.use(filesRoutes);
-routes.use(queueOptionRoutes);
-routes.use(queueIntegrationRoutes);
 routes.use(ticketTagRoutes);
-routes.use("/api", apiCompanyRoutes);
-routes.use("/api", apiContactRoutes);
-routes.use("/api", apiMessageRoutes);
-
-routes.use(flowDefaultRoutes);
-routes.use(webHook)
-routes.use(flowBuilder)
-routes.use(flowCampaignRoutes)
-
-
+routes.use(filesRoutes);
 routes.use(promptRoutes);
-routes.use(statisticsRoutes);
-routes.use(companySettingsRoutes);
-routes.use(scheduleMessageRoutes);
+routes.use(queueIntegrationRoutes);
+routes.use(forgotsRoutes);
+routes.use(versionRouter);
 
 export default routes;

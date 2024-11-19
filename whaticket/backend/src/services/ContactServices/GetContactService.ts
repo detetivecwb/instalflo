@@ -13,8 +13,6 @@ interface Request {
   number: string;
   companyId: number;
   email?: string;
-  acceptAudioMessage?: boolean;
-  active?: boolean;
   profilePicUrl?: string;
   extraInfo?: ExtraInfo[];
 }

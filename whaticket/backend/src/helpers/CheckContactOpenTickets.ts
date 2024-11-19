@@ -1,14 +1,28 @@
 import { Op } from "sequelize";
 import AppError from "../errors/AppError";
 import Ticket from "../models/Ticket";
-import User from "../models/User";
-import Queue from "../models/Queue";
 
-const CheckContactOpenTickets = async (contactId, whatsappId, companyId): Promise<void> => {
-  const ticket = await Ticket.findOne({
-    where: { contactId, whatsappId, companyId, status: { [Op.or]: ["open", "pending"] } }
-  });
+const CheckContactOpenTickets = async (contactId: number, whatsappId?: string): Promise<void> => {
+  let ticket
 
+  if (!whatsappId) {
+    ticket = await Ticket.findOne({
+      where: {
+        contactId,
+        status: { [Op.or]: ["open", "pending"] },
+
+      }
+    });
+  } else {
+    ticket = await Ticket.findOne({
+      where: {
+        contactId,
+        status: { [Op.or]: ["open", "pending"] },
+        whatsappId
+      }
+    });
+  }
+  console.log(ticket)
   if (ticket) {
     throw new AppError("ERR_OTHER_OPEN_TICKET");
   }

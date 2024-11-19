@@ -3,9 +3,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import toastError from "../../errors/toastError";
 import Popover from "@material-ui/core/Popover";
 import AnnouncementIcon from "@material-ui/icons/Announcement";
-
-import { i18n } from "../../translate/i18n";
-import { AuthContext } from "../../context/Auth/AuthContext";
+import Notifications from "@material-ui/icons/Notifications"
 
 import {
   Avatar,
@@ -27,13 +25,13 @@ import {
 import api from "../../services/api";
 import { isArray } from "lodash";
 import moment from "moment";
-// import { SocketContext } from "../../context/Socket/SocketContext";
+import { SocketContext } from "../../context/Socket/SocketContext";
 
 const useStyles = makeStyles((theme) => ({
   mainPaper: {
     flex: 1,
-    maxHeight: 300,
-    maxWidth: 500,
+    maxHeight: 3000,
+    maxWidth: 5000,
     padding: theme.spacing(1),
     overflowY: "scroll",
     ...theme.scrollbarStyles,
@@ -41,9 +39,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function AnnouncementDialog({ announcement, open, handleClose }) {
-  // const getMediaPath = (filename) => {
-  //   return path.join(`${process.env.REACT_APP_BACKEND_URL}`,"public", "announcements",`${filename}`);
-  // };
+  const getMediaPath = (filename) => {
+    return `${process.env.REACT_APP_BACKEND_URL}/public/${filename}`;
+  };
   return (
     <Dialog
       open={open}
@@ -59,24 +57,16 @@ function AnnouncementDialog({ announcement, open, handleClose }) {
               border: "1px solid #f1f1f1",
               margin: "0 auto 20px",
               textAlign: "center",
-              width: "95%",
+              width: "400px",
               height: 300,
+              backgroundImage: `url(${getMediaPath(announcement.mediaPath)})`,
               backgroundRepeat: "no-repeat",
-              backgroundSize: "cover",
+              backgroundSize: "contain",
               backgroundPosition: "center",
             }}
-          >
-            <img
-              alt={`announcement image`}
-              src={announcement.mediaPath}
-              style={{
-                width: "95%",
-                height: "100%",
-              }}
-            />
-          </div>
+          ></div>
         )}
-        <DialogContentText id="alert-dialog-description" style={{ whiteSpace: "pre-line" }}>
+        <DialogContentText id="alert-dialog-description">
           {announcement.text}
         </DialogContentText>
       </DialogContent>
@@ -149,9 +139,8 @@ export default function AnnouncementsPopover() {
   const [invisible, setInvisible] = useState(false);
   const [announcement, setAnnouncement] = useState({});
   const [showAnnouncementDialog, setShowAnnouncementDialog] = useState(false);
-//   const socketManager = useContext(SocketContext);
-  const { user, socket } = useContext(AuthContext);
 
+  const socketManager = useContext(SocketContext);
 
   useEffect(() => {
     dispatch({ type: "RESET" });
@@ -168,26 +157,26 @@ export default function AnnouncementsPopover() {
   }, [searchParam, pageNumber]);
 
   useEffect(() => {
-    if (user.companyId) {
-      const companyId = user.companyId;
-//    const socket = socketManager.GetSocket();
-
-      const onCompanyAnnouncement = (data) => {
-        if (data.action === "update" || data.action === "create") {
-          dispatch({ type: "UPDATE_ANNOUNCEMENTS", payload: data.record });
-          setInvisible(false);
-        }
-        if (data.action === "delete") {
-          dispatch({ type: "DELETE_ANNOUNCEMENT", payload: +data.id });
-        }
-      };
-      socket.on(`company-announcement`, onCompanyAnnouncement);
-
-      return () => {
-        socket.off(`company-announcement`, onCompanyAnnouncement);
-      };
+    const companyId = localStorage.getItem("companyId");
+    const socket = socketManager.getSocket(companyId);
+    
+    if (!socket) {
+      return () => {}; 
     }
-  }, [user]);
+
+    socket.on(`company-announcement`, (data) => {
+      if (data.action === "update" || data.action === "create") {
+        dispatch({ type: "UPDATE_ANNOUNCEMENTS", payload: data.record });
+        setInvisible(false);
+      }
+      if (data.action === "delete") {
+        dispatch({ type: "DELETE_ANNOUNCEMENT", payload: +data.id });
+      }
+    });
+    return () => {
+      socket.disconnect();
+    };
+  }, [socketManager]);
 
   const fetchAnnouncements = async () => {
     try {
@@ -235,6 +224,9 @@ export default function AnnouncementsPopover() {
     }
   };
 
+  const getMediaPath = (filename) => {
+    return `${process.env.REACT_APP_BACKEND_URL}/public/${filename}`;
+  };
 
   const handleShowAnnouncementDialog = (record) => {
     setAnnouncement(record);
@@ -263,7 +255,7 @@ export default function AnnouncementsPopover() {
           variant="dot"
           invisible={invisible || announcements.length < 1}
         >
-          <AnnouncementIcon />
+          <Notifications />
         </Badge>
       </IconButton>
       <Popover
@@ -295,7 +287,7 @@ export default function AnnouncementsPopover() {
                 <ListItem
                   key={key}
                   style={{
-                    background: key % 2 === 0 ? "primary" : "secondary",
+                    //background: key % 2 === 0 ? "#ededed" : "white",
                     border: "1px solid #eee",
                     borderLeft: borderPriority(item.priority),
                     cursor: "pointer",
@@ -305,7 +297,8 @@ export default function AnnouncementsPopover() {
                   {item.mediaPath && (
                     <ListItemAvatar>
                       <Avatar
-                        src={item.mediaPath}
+                        alt={item.mediaName}
+                        src={getMediaPath(item.mediaPath)}
                       />
                     </ListItemAvatar>
                   )}
@@ -326,7 +319,7 @@ export default function AnnouncementsPopover() {
                 </ListItem>
               ))}
             {isArray(announcements) && announcements.length === 0 && (
-              <ListItemText primary={i18n.t("mainDrawer.appBar.notRegister")} />
+              <ListItemText primary="Nenhum registro" />
             )}
           </List>
         </Paper>

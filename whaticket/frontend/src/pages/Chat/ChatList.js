@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
     height: "calc(100% - 58px)",
     overflow: "hidden",
     borderRadius: 0,
-    backgroundColor: theme.mode === 'light' ? "#f2f2f2" : "#7f7f7f",
+    backgroundColor: theme.palette.boxlist, //DARK MODE PLW DESIGN//
   },
   chatList: {
     display: "flex",
@@ -38,14 +38,8 @@ const useStyles = makeStyles((theme) => ({
     overflowY: "scroll",
     ...theme.scrollbarStyles,
   },
-  listItemActive: {
-    cursor: "pointer",
-    backgroundColor: theme.palette.background.paper,
-    borderLeft: "6px solid #002d6e",
-  },
   listItem: {
     cursor: "pointer",
-    backgroundColor: theme.palette.background.color,
   },
 }));
 
@@ -59,7 +53,7 @@ export default function ChatList({
 }) {
   const classes = useStyles();
   const history = useHistory();
-  const { user, socket } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const { datetimeToClient } = useDate();
 
   const [confirmationModal, setConfirmModalOpen] = useState(false);
@@ -113,6 +107,13 @@ export default function ChatList({
       : "";
   };
 
+  const getItemStyle = (chat) => {
+    return {
+      borderLeft: chat.uuid === id ? "6px solid #002d6e" : null,
+      backgroundColor: chat.uuid === id ? "theme.palette.chatlist" : null,
+    };
+  };
+
   return (
     <>
       <ConfirmationModal
@@ -132,8 +133,8 @@ export default function ChatList({
                 <ListItem
                   onClick={() => goToMessages(chat)}
                   key={key}
-                  className={chat.uuid === id ? classes.listItemActive : classes.listItem}
-                  // style={getItemStyle(chat)}
+                  className={classes.listItem}
+                  style={getItemStyle(chat)}
                   button
                 >
                   <ListItemText

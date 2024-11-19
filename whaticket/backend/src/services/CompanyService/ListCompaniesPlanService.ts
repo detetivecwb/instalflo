@@ -3,8 +3,8 @@ import Plan from "../../models/Plan";
 
 const ListCompaniesPlanService = async (): Promise<Company[]> => {
   const companies = await Company.findAll({
-    attributes: ["id", "name", "email", "status", "dueDate", "createdAt", "phone", "document", "lastLogin", "folderSize", "numberFileFolder", "updatedAtFolder"],
-    order: [["id", "ASC"]],
+    attributes: ["id", "name", "email", "status", "dueDate", "createdAt", "phone"],
+    order: [["name", "ASC"]],
     include: [
       {
         model: Plan, as: "plan",
@@ -14,17 +14,15 @@ const ListCompaniesPlanService = async (): Promise<Company[]> => {
           "users",
           "connections",
           "queues",
-          "amount",
-          "useWhatsapp",
-          "useFacebook",
-          "useInstagram",
+          "value",
           "useCampaigns",
           "useSchedules",
           "useInternalChat",
           "useExternalApi",
           "useKanban",
           "useOpenAi",
-          "useIntegrations"
+          "useIntegrations",
+		  "useInternal"
         ]
       },
     ]

@@ -1,26 +1,25 @@
-import * as Yup from "yup";
 import { Request, Response } from "express";
-import { getIO } from "../libs/socket";
-import { head } from "lodash";
 import fs from "fs";
+import { head } from "lodash";
 import path from "path";
+import * as Yup from "yup";
+import { getIO } from "../libs/socket";
 
-import ListService from "../services/CampaignService/ListService";
 import CreateService from "../services/CampaignService/CreateService";
-import ShowService from "../services/CampaignService/ShowService";
-import UpdateService from "../services/CampaignService/UpdateService";
 import DeleteService from "../services/CampaignService/DeleteService";
 import FindService from "../services/CampaignService/FindService";
+import ListService from "../services/CampaignService/ListService";
+import ShowService from "../services/CampaignService/ShowService";
+import UpdateService from "../services/CampaignService/UpdateService";
 
 import Campaign from "../models/Campaign";
 
-import ContactTag from "../models/ContactTag";
-import Ticket from "../models/Ticket";
+import AppError from "../errors/AppError";
 import Contact from "../models/Contact";
 import ContactList from "../models/ContactList";
 import ContactListItem from "../models/ContactListItem";
-
-import AppError from "../errors/AppError";
+import Ticket from "../models/Ticket";
+import TicketTag from "../models/TicketTag";
 import { CancelService } from "../services/CampaignService/CancelService";
 import { RestartService } from "../services/CampaignService/RestartService";
 
@@ -38,10 +37,7 @@ type StoreData = {
   companyId: number;
   contactListId: number;
   tagListId: number | string;
-  userId: number | string;
-  queueId: number | string;
-  statusTicket: string;
-  openTicket: string;
+  fileListId: number;
 };
 
 type FindParams = {
@@ -64,6 +60,7 @@ export const index = async (req: Request, res: Response): Promise<Response> => {
 export const store = async (req: Request, res: Response): Promise<Response> => {
   const { companyId } = req.user;
   const data = req.body as StoreData;
+  console.log('data------- store:', data);
 
   const schema = Yup.object().shape({
     name: Yup.string().required()
@@ -86,8 +83,11 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
       const formattedDate = currentDate.toISOString();
 
       try {
-        const contactTags = await ContactTag.findAll({ where: { tagId } });
-        const contactIds = contactTags.map((contactTag) => contactTag.contactId);
+        const ticketTags = await TicketTag.findAll({ where: { tagId } });
+        const ticketIds = ticketTags.map((ticketTag) => ticketTag.ticketId);
+
+        const tickets = await Ticket.findAll({ where: { id: ticketIds } });
+        const contactIds = tickets.map((ticket) => ticket.contactId);
 
         const contacts = await Contact.findAll({ where: { id: contactIds } });
 
@@ -103,7 +103,6 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
           contactListId,
           companyId,
           isWhatsappValid: true,
-          isGroup: contact.isGroup
 
         }));
 
@@ -126,11 +125,10 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
           contactListId: contactListId,
         });
         const io = getIO();
-        io.of(String(companyId))
-          .emit(`company-${companyId}-campaign`, {
-            action: "create",
-            record
-          });
+        io.to(`company-${companyId}-mainchannel`).emit(`company-${companyId}-campaign`, {
+          action: "create",
+          record
+        });
         return res.status(200).json(record);
       })
       .catch((error) => {
@@ -147,11 +145,10 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     });
 
     const io = getIO();
-    io.of(String(companyId))
-      .emit(`company-${companyId}-campaign`, {
-        action: "create",
-        record
-      });
+    io.to(`company-${companyId}-mainchannel`).emit(`company-${companyId}-campaign`, {
+      action: "create",
+      record
+    });
 
     return res.status(200).json(record);
   }
@@ -170,7 +167,6 @@ export const update = async (
   res: Response
 ): Promise<Response> => {
   const data = req.body as StoreData;
-
   const { companyId } = req.user;
 
   const schema = Yup.object().shape({
@@ -191,11 +187,10 @@ export const update = async (
   });
 
   const io = getIO();
-  io.of(String(companyId))
-    .emit(`company-${companyId}-campaign`, {
-      action: "update",
-      record
-    });
+  io.to(`company-${companyId}-mainchannel`).emit(`company-${companyId}-campaign`, {
+    action: "update",
+    record
+  });
 
   return res.status(200).json(record);
 };
@@ -232,11 +227,10 @@ export const remove = async (
   await DeleteService(id);
 
   const io = getIO();
-  io.of(String(companyId))
-    .emit(`company-${companyId}-campaign`, {
-      action: "delete",
-      id
-    });
+  io.to(`company-${companyId}-mainchannel`).emit(`company-${companyId}-campaign`, {
+    action: "delete",
+    id
+  });
 
   return res.status(200).json({ message: "Campaign deleted" });
 };
@@ -274,12 +268,11 @@ export const deleteMedia = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { companyId } = req.user;
   const { id } = req.params;
 
   try {
     const campaign = await Campaign.findByPk(id);
-    const filePath = path.resolve("public", `company${companyId}`, campaign.mediaPath);
+    const filePath = path.resolve("public", campaign.mediaPath);
     const fileExists = fs.existsSync(filePath);
     if (fileExists) {
       fs.unlinkSync(filePath);

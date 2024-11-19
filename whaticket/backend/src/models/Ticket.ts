@@ -12,8 +12,7 @@ import {
   Default,
   BeforeCreate,
   BelongsToMany,
-  AllowNull,
-  DataType
+  AllowNull
 } from "sequelize-typescript";
 import { v4 as uuidv4 } from "uuid";
 
@@ -23,11 +22,11 @@ import Queue from "./Queue";
 import User from "./User";
 import Whatsapp from "./Whatsapp";
 import Company from "./Company";
+import QueueOption from "./QueueOption";
 import Tag from "./Tag";
 import TicketTag from "./TicketTag";
 import QueueIntegrations from "./QueueIntegrations";
-import { format } from "date-fns";
-
+import Prompt from "./Prompt";
 
 @Table
 class Ticket extends Model<Ticket> {
@@ -43,28 +42,13 @@ class Ticket extends Model<Ticket> {
   unreadMessages: number;
 
   @Column
-  flowWebhook: boolean;
-
-  @Column
-  lastFlowId: string;
-
-  @Column
-  hashFlowId: string;
-
-  @Column
-  flowStopped: string;
-
-  @Column(DataType.JSON)
-  dataWebhook: {} | null;;
-
-  @Column
   lastMessage: string;
 
   @Default(false)
   @Column
   isGroup: boolean;
 
-  @Column
+  @CreatedAt
   createdAt: Date;
 
   @UpdatedAt
@@ -98,9 +82,15 @@ class Ticket extends Model<Ticket> {
   @BelongsTo(() => Queue)
   queue: Queue;
 
-  @Default(false)
   @Column
-  isBot: boolean;
+  chatbot: boolean;
+
+  @ForeignKey(() => QueueOption)
+  @Column
+  queueOptionId: number;
+
+  @BelongsTo(() => QueueOption)
+  queueOption: QueueOption;
 
   @HasMany(() => Message)
   messages: Message[];
@@ -122,46 +112,11 @@ class Ticket extends Model<Ticket> {
   @Column
   uuid: string;
 
-  @Default("whatsapp")
-  @Column
-  channel: string;
-
-  @AllowNull(false)
-  @Default(0)
-  @Column
-  amountUsedBotQueues: number;
-
-  @AllowNull(false)
-  @Default(0)
-  @Column
-  amountUsedBotQueuesNPS: number;
-
   @BeforeCreate
   static setUUID(ticket: Ticket) {
     ticket.uuid = uuidv4();
   }
-
-  @Default(false)
-  @Column
-  fromMe: boolean;
-
-  @Default(false)
-  @Column
-  sendInactiveMessage: boolean;
-
-  @Column
-  lgpdSendMessageAt: Date;
-
-  @Column
-  lgpdAcceptedAt: Date;
-
-  @Column
-  imported: Date;
-
-  @Default(false)
-  @Column
-  isOutOfHour: boolean;
-
+  
   @Default(false)
   @Column
   useIntegration: boolean;
@@ -174,17 +129,26 @@ class Ticket extends Model<Ticket> {
   queueIntegration: QueueIntegrations;
 
   @Column
-  isActiveDemand: boolean;
-
-  @Column
   typebotSessionId: string;
 
   @Default(false)
   @Column
   typebotStatus: boolean
 
+  @ForeignKey(() => Prompt)
   @Column
-  typebotSessionTime: Date
+  promptId: number;
+
+  @BelongsTo(() => Prompt)
+  prompt: Prompt;
+
+  @Column
+  fromMe: boolean;
+
+  @AllowNull(false)
+  @Default(0)
+  @Column
+  amountUsedBotQueues: number;
 }
 
 export default Ticket;

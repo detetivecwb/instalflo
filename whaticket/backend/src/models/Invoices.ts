@@ -1,79 +1,44 @@
 import {
-    Table,
-    Column,
-    CreatedAt,
-    UpdatedAt,
-    Model,
-    PrimaryKey,
-    AutoIncrement,
-    ForeignKey,
-    AllowNull,
-    HasMany,
-    Unique
+  Table,
+  Column,
+  CreatedAt,
+  UpdatedAt,
+  Model,
+  PrimaryKey,
+  AutoIncrement,
+  AllowNull,
+  HasMany,
+  Unique
 } from "sequelize-typescript";
-import Company from "./Company";
 
 @Table({ tableName: "Invoices" })
 class Invoices extends Model<Invoices> {
-    @PrimaryKey
-    @AutoIncrement
-    @Column
-    id: number;
+  @PrimaryKey
+  @AutoIncrement
+  @Column
+  id: number;
 
-    @ForeignKey(() => Company)
-    @Column
-    companyId: number;
+  @Column
+  detail: string;
 
-    @Column
-    dueDate: string;
+  @Column
+  status: string;
 
-    @Column
-    detail: string;
+  @Column
+  value: number;
 
-    @Column
-    status: string;
+  @CreatedAt
+  createdAt: Date;
 
-    @Column
-    value: number;
+  @UpdatedAt
+  updatedAt: Date;
 
-    @Column
-    users: number;
-  
-    @Column
-    connections: number;
-  
-    @Column
-    queues: number;
-  
-    @Column
-    useWhatsapp: boolean;   
-  
-    @Column
-    useFacebook: boolean;   
-  
-    @Column
-    useInstagram: boolean;   
-    
-    @Column
-    useCampaigns: boolean;   
-  
-    @Column
-    useSchedules: boolean;   
-  
-    @Column
-    useInternalChat: boolean;   
-    
-    @Column
-    useExternalApi: boolean;   
+  @Column
+  dueDate: string;
 
-    @CreatedAt
-    createdAt: Date;
+  @Column
+  companyId: number;
 
-    @UpdatedAt
-    updatedAt: Date;
-
-    @Column
-    linkInvoice: string;
 }
 
 export default Invoices;

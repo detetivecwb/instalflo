@@ -1,81 +1,62 @@
-import 'dotenv/config';
 import gracefulShutdown from "http-graceful-shutdown";
 import app from "./app";
-import cron from "node-cron";
 import { initIO } from "./libs/socket";
-import logger from "./utils/logger";
+import { logger } from "./utils/logger";
 import { StartAllWhatsAppsSessions } from "./services/WbotServices/StartAllWhatsAppsSessions";
 import Company from "./models/Company";
-import BullQueue from './libs/queue';
-
 import { startQueueProcess } from "./queues";
-// import { ScheduledMessagesJob, ScheduleMessagesGenerateJob, ScheduleMessagesEnvioJob, ScheduleMessagesEnvioForaHorarioJob } from "./wbotScheduledMessages";
+import { TransferTicketQueue } from "./wbotTransferTicketQueue";
+import cron from "node-cron";
 
 const server = app.listen(process.env.PORT, async () => {
-  const companies = await Company.findAll({
-    where: { status: true },
-    attributes: ["id"]
-  });
+  try {
+    const companies = await Company.findAll();
+    const sessionPromises = [];
 
-  const allPromises: any[] = [];
-  companies.map(async c => {
-    const promise = StartAllWhatsAppsSessions(c.id);
-    allPromises.push(promise);
-  });
+    for (const c of companies) {
+      sessionPromises.push(StartAllWhatsAppsSessions(c.id));
+    }
 
-  Promise.all(allPromises).then(async () => {
-
-    await startQueueProcess();
-  });
-
-  if (process.env.REDIS_URI_ACK && process.env.REDIS_URI_ACK !== '') {
-    BullQueue.process();
+    await Promise.all(sessionPromises);
+    startQueueProcess();
+    logger.info(`Server started on port: ${process.env.PORT}`);
+  } catch (error) {
+    logger.error("Error starting server:", error);
+    process.exit(1);
   }
-
-  logger.info(`Server started on port: ${process.env.PORT}`);
 });
 
 process.on("uncaughtException", err => {
-  console.error(`${new Date().toUTCString()} uncaughtException:`, err.message);
-  console.error(err.stack);
-  process.exit(1);
+  logger.error(`${new Date().toUTCString()} uncaughtException:`, err.message);
+  logger.error(err.stack);
+  // Remove process.exit(1); to avoid abrupt shutdowns
 });
 
 process.on("unhandledRejection", (reason, p) => {
-  console.error(
-    `${new Date().toUTCString()} unhandledRejection:`,
-    reason,
-    p
-  );
-  process.exit(1);
+  logger.error(`${new Date().toUTCString()} unhandledRejection:`, reason, p);
+  // Remove process.exit(1); to avoid abrupt shutdowns
 });
 
-// cron.schedule("* * * * * *", async () => {
-
-//   try {
-//     // console.log("Running a job at 5 minutes at America/Sao_Paulo timezone")
-//     await ScheduledMessagesJob();
-//     await ScheduleMessagesGenerateJob();
-//   }
-//   catch (error) {
-//     logger.error(error);
-//   }
-
-// });
-
-// cron.schedule("* * * * * *", async () => {
-
-//   try {
-//     // console.log("Running a job at 01:00 at America/Sao_Paulo timezone")
-//     console.log("Running a job at 2 minutes at America/Sao_Paulo timezone")
-//     await ScheduleMessagesEnvioJob();
-//     await ScheduleMessagesEnvioForaHorarioJob()
-//   }
-//   catch (error) {
-//     logger.error(error);
-//   }
-
-// });
+cron.schedule("* * * * *", async () => {
+  try {
+    logger.info(`Serviço de transferência de tickets iniciado`);
+    await TransferTicketQueue();
+  } catch (error) {
+    logger.error("Error in cron job:", error);
+  }
+});
 
 initIO(server);
-gracefulShutdown(server);
+
+// Configure graceful shutdown to handle all outstanding promises
+gracefulShutdown(server, {
+  signals: "SIGINT SIGTERM",
+  timeout: 30000, // 30 seconds
+  onShutdown: async () => {
+    logger.info("Gracefully shutting down...");
+    // Add any other cleanup code here, if necessary
+  },
+  finally: () => {
+    logger.info("Server shutdown complete.");
+  }
+});

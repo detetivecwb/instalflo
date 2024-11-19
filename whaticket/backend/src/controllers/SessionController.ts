@@ -15,22 +15,18 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     email,
     password
   });
- 
+
   SendRefreshToken(res, refreshToken);
 
   const io = getIO();
-
-  io.of(serializedUser.companyId.toString())
-  .emit(`company-${serializedUser.companyId}-auth`, {
+  io.to(`user-${serializedUser.id}`).emit(`company-${serializedUser.companyId}-auth`, {
     action: "update",
     user: {
       id: serializedUser.id,
       email: serializedUser.email,
-      companyId: serializedUser.companyId,
-      token: serializedUser.token
+      companyId: serializedUser.companyId
     }
   });
-  
 
   return res.status(200).json({
     token,
@@ -75,10 +71,9 @@ export const remove = async (
   res: Response
 ): Promise<Response> => {
   const { id } = req.user;
-  if (id) {
-    const user = await User.findByPk(id);
-    await user.update({ online: false });
-  }
+  const user = await User.findByPk(id);
+  await user.update({ online: false });
+
   res.clearCookie("jrt");
 
   return res.send();

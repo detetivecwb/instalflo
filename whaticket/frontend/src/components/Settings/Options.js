@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 
 import Grid from "@material-ui/core/Grid";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -6,16 +6,20 @@ import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
 import FormHelperText from "@material-ui/core/FormHelperText";
-
+import TextField from "@material-ui/core/TextField";
+import Title from "../Title";
+import Paper from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
 import useSettings from "../../hooks/useSettings";
-
+import { ToastContainer, toast } from 'react-toastify';
 import { makeStyles } from "@material-ui/core/styles";
 import { grey, blue } from "@material-ui/core/colors";
+import { Tabs, Tab } from "@material-ui/core";
+import OnlyForSuperUser from '../../components/OnlyForSuperUser';
+import useAuth from '../../hooks/useAuth.js';
 
-import { Tab, Tabs, TextField } from "@material-ui/core";
-import { i18n } from "../../translate/i18n";
-import useCompanySettings from "../../hooks/useSettings/companySettings";
-
+//import 'react-toastify/dist/ReactToastify.css';
+ 
 const useStyles = makeStyles((theme) => ({
   container: {
     paddingTop: theme.spacing(4),
@@ -27,6 +31,26 @@ const useStyles = makeStyles((theme) => ({
     overflow: "auto",
     flexDirection: "column",
     height: 240,
+  },
+  tab: {
+    backgroundColor: theme.palette.options,  //DARK MODE PLW DESIGN//
+    borderRadius: 4,
+    width: "100%",
+    "& .MuiTab-wrapper": {
+      color: theme.palette.fontecor,
+    },   //DARK MODE PLW DESIGN//
+    "& .MuiTabs-flexContainer": {
+      justifyContent: "center"
+    }
+
+
+  },
+  paper: {
+    padding: theme.spacing(2),
+    display: "flex",
+    alignItems: "center",
+    marginBottom: 12,
+    width: "100%",
   },
   cardAvatar: {
     fontSize: "55px",
@@ -53,470 +77,388 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     textAlign: "left",
   },
-  tab: {
-    backgroundColor: theme.mode === 'light' ? "#f2f2f2" : "#7f7f7f",
-    borderRadius: 4,
-    width: "100%",
-    "& .MuiTabs-flexContainer": {
-      justifyContent: "center"
-    }
-  },
 }));
 
 export default function Options(props) {
-  const { oldSettings, settings, scheduleTypeChanged, user } = props;
-
+  const { settings, scheduleTypeChanged } = props;
   const classes = useStyles();
+
+  const [currentUser, setCurrentUser] = useState({});
+  const { getCurrentUserInfo } = useAuth();
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    async function findData() {
+      setLoading(true);
+      try {
+        const user = await getCurrentUserInfo();
+        setCurrentUser(user);
+      } catch (e) {
+        toast.error(e);
+      }
+      setLoading(false);
+    }
+    findData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const isSuper = () => {
+    return currentUser.super;
+  }; 
+
   const [userRating, setUserRating] = useState("disabled");
   const [scheduleType, setScheduleType] = useState("disabled");
-  const [chatBotType, setChatBotType] = useState("text");
+  const [callType, setCallType] = useState("enabled");
+  const [chatbotType, setChatbotType] = useState("");
+  const [CheckMsgIsGroup, setCheckMsgIsGroupType] = useState("enabled");
 
   const [loadingUserRating, setLoadingUserRating] = useState(false);
   const [loadingScheduleType, setLoadingScheduleType] = useState(false);
+  const [loadingCallType, setLoadingCallType] = useState(false);
+  const [loadingChatbotType, setLoadingChatbotType] = useState(false);
+  const [loadingCheckMsgIsGroup, setCheckMsgIsGroup] = useState(false);
 
-  const [userCreation, setUserCreation] = useState("disabled");
-  const [loadingUserCreation, setLoadingUserCreation] = useState(false);
 
-  const [SendGreetingAccepted, setSendGreetingAccepted] = useState("enabled");
+  const [ipixcType, setIpIxcType] = useState("");
+  const [loadingIpIxcType, setLoadingIpIxcType] = useState(false);
+  const [tokenixcType, setTokenIxcType] = useState("");
+  const [loadingTokenIxcType, setLoadingTokenIxcType] = useState(false);
+
+  const [ipmkauthType, setIpMkauthType] = useState("");
+  const [loadingIpMkauthType, setLoadingIpMkauthType] = useState(false);
+  const [clientidmkauthType, setClientIdMkauthType] = useState("");
+  const [loadingClientIdMkauthType, setLoadingClientIdMkauthType] = useState(false);
+  const [clientsecretmkauthType, setClientSecrectMkauthType] = useState("");
+  const [loadingClientSecrectMkauthType, setLoadingClientSecrectMkauthType] = useState(false);
+
+  const [asaasType, setAsaasType] = useState("");
+  const [loadingAsaasType, setLoadingAsaasType] = useState(false);
+  
+  // recursos a mais...
+  const [trial, settrial] = useState('3');
+  const [loadingtrial, setLoadingtrial] = useState(false);
+
+  const [viewregister, setviewregister] = useState('disabled');
+  const [loadingviewregister, setLoadingviewregister] = useState(false);
+
+  const [allowregister, setallowregister] = useState('disabled');
+  const [loadingallowregister, setLoadingallowregister] = useState(false);
+
+  const [SendGreetingAccepted, setSendGreetingAccepted] = useState("disabled");
   const [loadingSendGreetingAccepted, setLoadingSendGreetingAccepted] = useState(false);
-
-  const [UserRandom, setUserRandom] = useState("enabled");
-  const [loadingUserRandom, setLoadingUserRandom] = useState(false);
-
-  const [SettingsTransfTicket, setSettingsTransfTicket] = useState("enabled");
+  
+  const [SettingsTransfTicket, setSettingsTransfTicket] = useState("disabled");
   const [loadingSettingsTransfTicket, setLoadingSettingsTransfTicket] = useState(false);
-
-  const [AcceptCallWhatsapp, setAcceptCallWhatsapp] = useState("enabled");
-  const [loadingAcceptCallWhatsapp, setLoadingAcceptCallWhatsapp] = useState(false);
-
-  const [sendSignMessage, setSendSignMessage] = useState("enabled");
-  const [loadingSendSignMessage, setLoadingSendSignMessage] = useState(false);
-
-  const [sendGreetingMessageOneQueues, setSendGreetingMessageOneQueues] = useState("enabled");
+  
+  const [sendGreetingMessageOneQueues, setSendGreetingMessageOneQueues] = useState("disabled");
   const [loadingSendGreetingMessageOneQueues, setLoadingSendGreetingMessageOneQueues] = useState(false);
 
-  const [sendQueuePosition, setSendQueuePosition] = useState("enabled");
-  const [loadingSendQueuePosition, setLoadingSendQueuePosition] = useState(false);
-
-  const [sendFarewellWaitingTicket, setSendFarewellWaitingTicket] = useState("enabled");
-  const [loadingSendFarewellWaitingTicket, setLoadingSendFarewellWaitingTicket] = useState(false);
-
-  const [acceptAudioMessageContact, setAcceptAudioMessageContact] = useState("enabled");
-  const [loadingAcceptAudioMessageContact, setLoadingAcceptAudioMessageContact] = useState(false);
-
-  //LGPD
-  const [enableLGPD, setEnableLGPD] = useState("disabled");
-  const [loadingEnableLGPD, setLoadingEnableLGPD] = useState(false);
-
-  const [lgpdMessage, setLGPDMessage] = useState("");
-  const [loadinglgpdMessage, setLoadingLGPDMessage] = useState(false);
-
-  const [lgpdLink, setLGPDLink] = useState("");
-  const [loadingLGPDLink, setLoadingLGPDLink] = useState(false);
-
-  const [lgpdDeleteMessage, setLGPDDeleteMessage] = useState("disabled");
-  const [loadingLGPDDeleteMessage, setLoadingLGPDDeleteMessage] = useState(false);
-
-  const [lgpdConsent, setLGPDConsent] = useState("disabled");
-  const [loadingLGPDConsent, setLoadingLGPDConsent] = useState(false);
-
-  const [lgpdHideNumber, setLGPDHideNumber] = useState("disabled");
-  const [loadingLGPDHideNumber, setLoadingLGPDHideNumber] = useState(false);
-
-  // Tag obrigatoria
-  const [requiredTag, setRequiredTag] = useState("enabled")
-  const [loadingRequiredTag, setLoadingRequiredTag] = useState(false)
-
-  // Fechar ticket ao transferir para outro setor
-  const [closeTicketOnTransfer, setCloseTicketOnTransfer] = useState(false)
-  const [loadingCloseTicketOnTransfer, setLoadingCloseTicketOnTransfer] = useState(false)
-
-  // Usar carteira de clientes
-  const [directTicketsToWallets, setDirectTicketsToWallets] = useState(false)
-  const [loadingDirectTicketsToWallets, setLoadingDirectTicketsToWallets] = useState(false)
-
-  //MENSAGENS CUSTOMIZADAS
-  const [transferMessage, setTransferMessage] = useState("Seu Atendimento foi Transferido para o setor ${queue.name},Aguarde atendimento por favor...");
-  const [loadingTransferMessage, setLoadingTransferMessage] = useState(false);
-
-  const [greetingAcceptedMessage, setGreetingAcceptedMessage] = useState("");
-  const [loadingGreetingAcceptedMessage, setLoadingGreetingAcceptedMessage] = useState(false);
-  
-  const [AcceptCallWhatsappMessage, setAcceptCallWhatsappMessage] = useState("");
-  const [loadingAcceptCallWhatsappMessage, setLoadingAcceptCallWhatsappMessage] = useState(false);
-
-  const [sendQueuePositionMessage, setSendQueuePositionMessage] = useState("");
-  const [loadingSendQueuePositionMessage, setLoadingSendQueuePositionMessage] = useState(false);
-
-  const [showNotificationPending, setShowNotificationPending] = useState(false);
-  const [loadingShowNotificationPending, setLoadingShowNotificationPending] = useState(false);
-
-  const { update: updateUserCreation, getAll } = useSettings();
-
-  const { update } = useCompanySettings();
-
-  const isSuper = () => {
-    return user.super;
-  };
-
+  const { update } = useSettings();
 
   useEffect(() => {
+    if (Array.isArray(settings) && settings.length) {
+      const userRating = settings.find((s) => s.key === "userRating");
+      if (userRating) {
+        setUserRating(userRating.value);
+      }
+      const scheduleType = settings.find((s) => s.key === "scheduleType");
+      if (scheduleType) {
+        setScheduleType(scheduleType.value);
+      }
+      const callType = settings.find((s) => s.key === "call");
+      if (callType) {
+        setCallType(callType.value);
+      }
+      const CheckMsgIsGroup = settings.find((s) => s.key === "CheckMsgIsGroup");
+      if (CheckMsgIsGroup) {
+        setCheckMsgIsGroupType(CheckMsgIsGroup.value);
+      }
 
-    if (Array.isArray(oldSettings) && oldSettings.length) {
+      const allowregister = settings.find((s) => s.key === 'allowregister');
+      if (allowregister) {
+        setallowregister(allowregister.value);
+      }
+      
+	  {/*PLW DESIGN SAUDAÇÃO*/}
+      const SendGreetingAccepted = settings.find((s) => s.key === "sendGreetingAccepted");
+      if (SendGreetingAccepted) {
+        setSendGreetingAccepted(SendGreetingAccepted.value);
+      }	 
+	  {/*PLW DESIGN SAUDAÇÃO*/}	 
+	  
+	  {/*TRANSFERIR TICKET*/}	
+	  const SettingsTransfTicket = settings.find((s) => s.key === "sendMsgTransfTicket");
+      if (SettingsTransfTicket) {
+        setSettingsTransfTicket(SettingsTransfTicket.value);
+      }
+	  {/*TRANSFERIR TICKET*/}
 
-      const userPar = oldSettings.find((s) => s.key === "userCreation");
 
-      if (userPar) {
-        setUserCreation(userPar.value);
+      const viewregister = settings.find((s) => s.key === 'viewregister');
+      if (viewregister) {
+        setviewregister(viewregister.value);
+      }
+
+      const sendGreetingMessageOneQueues = settings.find((s) => s.key === "sendGreetingMessageOneQueues");
+      if (sendGreetingMessageOneQueues) {
+        setSendGreetingMessageOneQueues(sendGreetingMessageOneQueues.value)
+      }	  
+	  
+      const chatbotType = settings.find((s) => s.key === "chatBotType");
+      if (chatbotType) {
+        setChatbotType(chatbotType.value);
+      }
+	  
+	  const trial = settings.find((s) => s.key === 'trial');
+      if (trial) {
+        settrial(trial.value);
+      }
+
+      const ipixcType = settings.find((s) => s.key === "ipixc");
+      if (ipixcType) {
+        setIpIxcType(ipixcType.value);
+      }
+
+      const tokenixcType = settings.find((s) => s.key === "tokenixc");
+      if (tokenixcType) {
+        setTokenIxcType(tokenixcType.value);
+      }
+
+      const ipmkauthType = settings.find((s) => s.key === "ipmkauth");
+      if (ipmkauthType) {
+        setIpMkauthType(ipmkauthType.value);
+      }
+
+      const clientidmkauthType = settings.find((s) => s.key === "clientidmkauth");
+      if (clientidmkauthType) {
+        setClientIdMkauthType(clientidmkauthType.value);
+      }
+
+      const clientsecretmkauthType = settings.find((s) => s.key === "clientsecretmkauth");
+      if (clientsecretmkauthType) {
+        setClientSecrectMkauthType(clientsecretmkauthType.value);
+      }
+
+      const asaasType = settings.find((s) => s.key === "asaas");
+      if (asaasType) {
+        setAsaasType(asaasType.value);
       }
     }
-  }, [oldSettings])
-
-
-  useEffect(() => {
-    for (const [key, value] of Object.entries(settings)) {
-      if (key === "userRating") setUserRating(value);
-      if (key === "scheduleType") setScheduleType(value);
-      if (key === "chatBotType") setChatBotType(value);
-      if (key === "acceptCallWhatsapp") setAcceptCallWhatsapp(value);
-      if (key === "userRandom") setUserRandom(value);
-      if (key === "sendGreetingMessageOneQueues") setSendGreetingMessageOneQueues(value);
-      if (key === "sendSignMessage") setSendSignMessage(value);
-      if (key === "sendFarewellWaitingTicket") setSendFarewellWaitingTicket(value);
-      if (key === "sendGreetingAccepted") setSendGreetingAccepted(value);
-      if (key === "sendQueuePosition") setSendQueuePosition(value);
-      if (key === "acceptAudioMessageContact") setAcceptAudioMessageContact(value);
-      if (key === "enableLGPD") setEnableLGPD(value);
-      if (key === "requiredTag") setRequiredTag(value);
-      if (key === "lgpdDeleteMessage") setLGPDDeleteMessage(value)
-      if (key === "lgpdHideNumber") setLGPDHideNumber(value);
-      if (key === "lgpdConsent") setLGPDConsent(value);
-      if (key === "lgpdMessage") setLGPDMessage(value);
-      if (key === "sendMsgTransfTicket") setSettingsTransfTicket(value);
-      if (key === "lgpdLink") setLGPDLink(value);
-      if (key === "DirectTicketsToWallets") setDirectTicketsToWallets(value);
-      if (key === "closeTicketOnTransfer") setCloseTicketOnTransfer(value);
-      if (key === "transferMessage") setTransferMessage(value);
-      if (key === "greetingAcceptedMessage") setGreetingAcceptedMessage(value);
-      if (key === "AcceptCallWhatsappMessage") setAcceptCallWhatsappMessage(value);
-      if (key === "sendQueuePositionMessage") setSendQueuePositionMessage(value);
-      if (key === "showNotificationPending") setShowNotificationPending(value);
-
-    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings]);
-
-  async function handleChangeUserCreation(value) {
-    setUserCreation(value);
-    setLoadingUserCreation(true);
-    await updateUserCreation({
-      key: "userCreation",
-      value,
-    });
-    setLoadingUserCreation(false);
-  }
 
   async function handleChangeUserRating(value) {
     setUserRating(value);
     setLoadingUserRating(true);
     await update({
-      column: "userRating",
-      data: value
+      key: "userRating",
+      value,
     });
+    toast.success("Operação atualizada com sucesso.");
     setLoadingUserRating(false);
   }
+
+  async function handleallowregister(value) {
+    setallowregister(value);
+    setLoadingallowregister(true);
+    await update({
+      key: 'allowregister',
+      value,
+    });
+    toast.success('Operação atualizada com sucesso.');
+    setLoadingallowregister(false);
+  }
+  
+    async function handleSendGreetingMessageOneQueues(value) {
+    setSendGreetingMessageOneQueues(value);
+    setLoadingSendGreetingMessageOneQueues(true);
+    await update({
+      key: "sendGreetingMessageOneQueues",
+      value,
+    });
+	toast.success("Operação atualizada com sucesso.");
+    setLoadingSendGreetingMessageOneQueues(false);
+  }
+
+  async function handleviewregister(value) {
+    setviewregister(value);
+    setLoadingviewregister(true);
+    await update({
+      key: 'viewregister',
+      value,
+    });
+    toast.success('Operação atualizada com sucesso.');
+    setLoadingviewregister(false);
+  }
+  
+    async function handletrial(value) {
+    settrial(value);
+    setLoadingtrial(true);
+    await update({
+      key: 'trial',
+      value,
+    });
+    toast.success('Operação atualizada com sucesso.');
+    setLoadingtrial(false);
+  }
+
 
   async function handleScheduleType(value) {
     setScheduleType(value);
     setLoadingScheduleType(true);
     await update({
-      column: "scheduleType",
-      data: value
+      key: "scheduleType",
+      value,
     });
+    //toast.success("Oraçãpeo atualizada com sucesso.");
+    toast.success('Operação atualizada com sucesso.', {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: true,
+      theme: "light",
+      });
     setLoadingScheduleType(false);
     if (typeof scheduleTypeChanged === "function") {
       scheduleTypeChanged(value);
     }
   }
 
-  async function handleChatBotType(value) {
-    setChatBotType(value);
+  async function handleCallType(value) {
+    setCallType(value);
+    setLoadingCallType(true);
     await update({
-      column: "chatBotType",
-      data: value
+      key: "call",
+      value,
     });
-    if (typeof scheduleTypeChanged === "function") {
-      setChatBotType(value);
-    }
+    toast.success("Operação atualizada com sucesso.");
+    setLoadingCallType(false);
   }
 
-  async function handleLGPDMessage(value) {
-    setLGPDMessage(value);
-    setLoadingLGPDMessage(true);
+  async function handleChatbotType(value) {
+    setChatbotType(value);
+    setLoadingChatbotType(true);
     await update({
-      column: "lgpdMessage",
-      data: value
+      key: "chatBotType",
+      value,
     });
-    setLoadingLGPDMessage(false);
+    toast.success("Operação atualizada com sucesso.");
+    setLoadingChatbotType(false);
   }
 
-  async function handletransferMessage(value) {
-    setTransferMessage(value);
-    setLoadingTransferMessage(true);
+  async function handleGroupType(value) {
+    setCheckMsgIsGroupType(value);
+    setCheckMsgIsGroup(true);
     await update({
-      column: "transferMessage",
-      data: value
+      key: "CheckMsgIsGroup",
+      value,
     });
-    setLoadingTransferMessage(false);
+    toast.success("Operação atualizada com sucesso.");
+    setCheckMsgIsGroupType(false);
+    /*     if (typeof scheduleTypeChanged === "function") {
+          scheduleTypeChanged(value);
+        } */
   }
-
-  async function handleGreetingAcceptedMessage(value) {
-    setGreetingAcceptedMessage(value);
-    setLoadingGreetingAcceptedMessage(true);
-    await update({
-      column: "greetingAcceptedMessage",
-      data: value
-    });
-    setLoadingGreetingAcceptedMessage(false);
-  }
-
-  async function handleAcceptCallWhatsappMessage(value) {
-    setAcceptCallWhatsappMessage(value);
-    setLoadingAcceptCallWhatsappMessage(true);
-    await update({
-      column: "AcceptCallWhatsappMessage",
-      data: value
-    });
-    setLoadingAcceptCallWhatsappMessage(false);
-  }
-
-  async function handlesendQueuePositionMessage(value) {
-    setSendQueuePositionMessage(value);
-    setLoadingSendQueuePositionMessage(true);
-    await update({
-      column: "sendQueuePositionMessage",
-      data: value
-    });
-    setLoadingSendQueuePositionMessage(false);
-  }
-
-  async function handleShowNotificationPending(value) {
-    setShowNotificationPending(value);
-    setLoadingShowNotificationPending(true);
-    await update({
-      column: "showNotificationPending",
-      data: value
-    });
-    setLoadingShowNotificationPending(false);
-  }
-
-  async function handleLGPDLink(value) {
-    setLGPDLink(value);
-    setLoadingLGPDLink(true);
-    await update({
-      column: "lgpdLink",
-      data: value
-    });
-    setLoadingLGPDLink(false);
-  }
-
-  async function handleLGPDDeleteMessage(value) {
-    setLGPDDeleteMessage(value);
-    setLoadingLGPDDeleteMessage(true);
-    await update({
-      column: "lgpdDeleteMessage",
-      data: value
-    });
-    setLoadingLGPDDeleteMessage(false);
-  }
-
-  async function handleLGPDConsent(value) {
-    setLGPDConsent(value);
-    setLoadingLGPDConsent(true);
-    await update({
-      column: "lgpdConsent",
-      data: value
-    });
-    setLoadingLGPDConsent(false);
-  }
-
-  async function handleLGPDHideNumber(value) {
-    setLGPDHideNumber(value);
-    setLoadingLGPDHideNumber(true);
-    await update({
-      column: "lgpdHideNumber",
-      data: value
-    });
-    setLoadingLGPDHideNumber(false);
-  }
-
+  
+  {/*NOVO CÓDIGO*/}  
   async function handleSendGreetingAccepted(value) {
     setSendGreetingAccepted(value);
     setLoadingSendGreetingAccepted(true);
     await update({
-      column: "sendGreetingAccepted",
-      data: value
+      key: "sendGreetingAccepted",
+      value,
     });
+	toast.success("Operação atualizada com sucesso.");
     setLoadingSendGreetingAccepted(false);
-  }
-
-  async function handleUserRandom(value) {
-    setUserRandom(value);
-    setLoadingUserRandom(true);
-    await update({
-      column: "userRandom",
-      data: value
-    });
-    setLoadingUserRandom(false);
-  }
+  }  
+  
+  
+  {/*NOVO CÓDIGO*/}    
 
   async function handleSettingsTransfTicket(value) {
     setSettingsTransfTicket(value);
     setLoadingSettingsTransfTicket(true);
     await update({
-      column: "sendMsgTransfTicket",
-      data: value
+      key: "sendMsgTransfTicket",
+      value,
     });
+
+    toast.success("Operação atualizada com sucesso.");
     setLoadingSettingsTransfTicket(false);
-  }
-
-  async function handleAcceptCallWhatsapp(value) {
-    setAcceptCallWhatsapp(value);
-    setLoadingAcceptCallWhatsapp(true);
+  } 
+ 
+  async function handleChangeIPIxc(value) {
+    setIpIxcType(value);
+    setLoadingIpIxcType(true);
     await update({
-      column: "acceptCallWhatsapp",
-      data: value
+      key: "ipixc",
+      value,
     });
-    setLoadingAcceptCallWhatsapp(false);
+    toast.success("Operação atualizada com sucesso.");
+    setLoadingIpIxcType(false);
   }
 
-  async function handleSendSignMessage(value) {
-    setSendSignMessage(value);
-    setLoadingSendSignMessage(true);
+  async function handleChangeTokenIxc(value) {
+    setTokenIxcType(value);
+    setLoadingTokenIxcType(true);
     await update({
-      column: "sendSignMessage",
-      data: value
+      key: "tokenixc",
+      value,
     });
-    localStorage.setItem("sendSignMessage", value === "enabled" ? true : false); //atualiza localstorage para sessão
-    setLoadingSendSignMessage(false);
+    toast.success("Operação atualizada com sucesso.");
+    setLoadingTokenIxcType(false);
   }
 
-  async function handleSendGreetingMessageOneQueues(value) {
-    setSendGreetingMessageOneQueues(value);
-    setLoadingSendGreetingMessageOneQueues(true);
+  async function handleChangeIpMkauth(value) {
+    setIpMkauthType(value);
+    setLoadingIpMkauthType(true);
     await update({
-      column: "sendGreetingMessageOneQueues",
-      data: value
+      key: "ipmkauth",
+      value,
     });
-    setLoadingSendGreetingMessageOneQueues(false);
+    toast.success("Operação atualizada com sucesso.");
+    setLoadingIpMkauthType(false);
   }
 
-  async function handleSendQueuePosition(value) {
-    setSendQueuePosition(value);
-    setLoadingSendQueuePosition(true);
+  async function handleChangeClientIdMkauth(value) {
+    setClientIdMkauthType(value);
+    setLoadingClientIdMkauthType(true);
     await update({
-      column: "sendQueuePosition",
-      data: value
+      key: "clientidmkauth",
+      value,
     });
-    setLoadingSendQueuePosition(false);
+    toast.success("Operação atualizada com sucesso.");
+    setLoadingClientIdMkauthType(false);
   }
 
-  async function handleSendFarewellWaitingTicket(value) {
-    setSendFarewellWaitingTicket(value);
-    setLoadingSendFarewellWaitingTicket(true);
+  async function handleChangeClientSecrectMkauth(value) {
+    setClientSecrectMkauthType(value);
+    setLoadingClientSecrectMkauthType(true);
     await update({
-      column: "sendFarewellWaitingTicket",
-      data: value
+      key: "clientsecretmkauth",
+      value,
     });
-    setLoadingSendFarewellWaitingTicket(false);
+    toast.success("Operação atualizada com sucesso.");
+    setLoadingClientSecrectMkauthType(false);
   }
 
-  async function handleAcceptAudioMessageContact(value) {
-    setAcceptAudioMessageContact(value);
-    setLoadingAcceptAudioMessageContact(true);
+  async function handleChangeAsaas(value) {
+    setAsaasType(value);
+    setLoadingAsaasType(true);
     await update({
-      column: "acceptAudioMessageContact",
-      data: value
+      key: "asaas",
+      value,
     });
-    setLoadingAcceptAudioMessageContact(false);
+    toast.success("Operação atualizada com sucesso.");
+    setLoadingAsaasType(false);
   }
-
-  async function handleEnableLGPD(value) {
-    setEnableLGPD(value);
-    setLoadingEnableLGPD(true);
-    await update({
-      column: "enableLGPD",
-      data: value
-    });
-    setLoadingEnableLGPD(false);
-  }
-
-  async function handleRequiredTag(value) {
-    setRequiredTag(value);
-    setLoadingRequiredTag(true);
-    await update({
-      column: "requiredTag",
-      data: value,
-    });
-    setLoadingRequiredTag(false);
-  }
-
-  async function handleCloseTicketOnTransfer(value) {
-    setCloseTicketOnTransfer(value);
-    setLoadingCloseTicketOnTransfer(true);
-    await update({
-      column: "closeTicketOnTransfer",
-      data: value,
-    });
-    setLoadingCloseTicketOnTransfer(false);
-  }
-
-  async function handleDirectTicketsToWallets(value) {
-    setDirectTicketsToWallets(value);
-    setLoadingDirectTicketsToWallets(true);
-    await update({
-      column: "DirectTicketsToWallets",
-      data: value,
-    });
-    setLoadingDirectTicketsToWallets(false);
-  }
-
   return (
     <>
       <Grid spacing={3} container>
-
-        {/* CRIAÇÃO DE COMPANY/USERS */}
-        {isSuper() ?
-          <Grid xs={12} sm={6} md={4} item>
-            <FormControl className={classes.selectContainer}>
-              <InputLabel id="UserCreation-label">
-                {i18n.t("settings.settings.options.creationCompanyUser")}
-              </InputLabel>
-              <Select
-                labelId="UserCreation-label"
-                value={userCreation}
-                onChange={async (e) => {
-                  handleChangeUserCreation(e.target.value);
-                }}
-              >
-                <MenuItem value={"disabled"}>
-                  {i18n.t("settings.settings.options.disabled")}
-                </MenuItem>
-                <MenuItem value={"enabled"}>
-                  {i18n.t("settings.settings.options.enabled")}
-                </MenuItem>
-              </Select>
-              <FormHelperText>
-                {loadingUserCreation &&
-                  i18n.t("settings.settings.options.updating")}
-              </FormHelperText>
-            </FormControl>
-          </Grid>
-          : null}
-
-        {/* AVALIAÇÕES */}
-        <Grid xs={12} sm={6} md={4} item>
+        <Grid xs={12} sm={12} md={12} item>
           <FormControl className={classes.selectContainer}>
-            <InputLabel id="ratings-label">{i18n.t("settings.settings.options.evaluations")}</InputLabel>
+            <InputLabel id="ratings-label">Avaliações</InputLabel>
             <Select
               labelId="ratings-label"
               value={userRating}
@@ -524,24 +466,18 @@ export default function Options(props) {
                 handleChangeUserRating(e.target.value);
               }}
             >
-              <MenuItem value={"disabled"}>
-                {i18n.t("settings.settings.options.disabled")}
-              </MenuItem>
-              <MenuItem value={"enabled"}>
-                {i18n.t("settings.settings.options.enabled")}
-              </MenuItem>
+              <MenuItem value={"disabled"}>Desabilitadas</MenuItem>
+              <MenuItem value={"enabled"}>Habilitadas</MenuItem>
             </Select>
             <FormHelperText>
-              {loadingUserRating && i18n.t("settings.settings.options.evaluations")}
+              {loadingUserRating && "Atualizando..."}
             </FormHelperText>
           </FormControl>
         </Grid>
-
-        {/* AGENDAMENTO DE EXPEDIENTE */}
-        <Grid xs={12} sm={6} md={4} item>
+        <Grid xs={12} sm={12} md={12} item>
           <FormControl className={classes.selectContainer}>
             <InputLabel id="schedule-type-label">
-              {i18n.t("settings.settings.options.officeScheduling")}
+              Gerenciamento de Expediente
             </InputLabel>
             <Select
               labelId="schedule-type-label"
@@ -550,23 +486,80 @@ export default function Options(props) {
                 handleScheduleType(e.target.value);
               }}
             >
-              <MenuItem value={"disabled"}>{i18n.t("settings.settings.options.disabled")}</MenuItem>
-              <MenuItem value={"queue"}>{i18n.t("settings.settings.options.queueManagement")}</MenuItem>
-              <MenuItem value={"company"}>{i18n.t("settings.settings.options.companyManagement")}</MenuItem>
-              <MenuItem value={"connection"}>{i18n.t("settings.settings.options.connectionManagement")}</MenuItem>
+              <MenuItem value={"disabled"}>Desabilitado</MenuItem>
+              <MenuItem value={"queue"}>Fila</MenuItem>
+              <MenuItem value={"company"}>Empresa</MenuItem>
             </Select>
             <FormHelperText>
-              {loadingScheduleType && i18n.t("settings.settings.options.updating")}
+              {loadingScheduleType && "Atualizando..."}
             </FormHelperText>
           </FormControl>
         </Grid>
-
-        {/* ENVIAR SAUDAÇÃO AO ACEITAR O TICKET */}
-        <Grid xs={12} sm={6} md={4} item>
+        <Grid xs={12} sm={12} md={12} item>
           <FormControl className={classes.selectContainer}>
-            <InputLabel id="sendGreetingAccepted-label">
-              {i18n.t("settings.settings.options.sendGreetingAccepted")}
+            <InputLabel id="group-type-label">
+              Ignorar Mensagens de Grupos
             </InputLabel>
+            <Select
+              labelId="group-type-label"
+              value={CheckMsgIsGroup}
+              onChange={async (e) => {
+                handleGroupType(e.target.value);
+              }}
+            >
+              <MenuItem value={"disabled"}>Desativado</MenuItem>
+              <MenuItem value={"enabled"}>Ativado</MenuItem>
+            </Select>
+            <FormHelperText>
+              {loadingScheduleType && "Atualizando..."}
+            </FormHelperText>
+          </FormControl>
+        </Grid>
+        <Grid xs={12} sm={12} md={12} item>
+          <FormControl className={classes.selectContainer}>
+            <InputLabel id="call-type-label">
+              Aceitar Chamada
+            </InputLabel>
+            <Select
+              labelId="call-type-label"
+              value={callType}
+              onChange={async (e) => {
+                handleCallType(e.target.value);
+              }}
+            >
+              <MenuItem value={"disabled"}>Não Aceitar</MenuItem>
+              <MenuItem value={"enabled"}>Aceitar</MenuItem>
+            </Select>
+            <FormHelperText>
+              {loadingCallType && "Atualizando..."}
+            </FormHelperText>
+          </FormControl>
+        </Grid>
+       <Grid xs={12} sm={12} md={12} item>
+          <FormControl className={classes.selectContainer}>
+            <InputLabel id="chatbot-type-label">
+              Tipo Chatbot
+            </InputLabel>
+            <Select
+              labelId="chatbot-type-label"
+              value={chatbotType}
+              onChange={async (e) => {
+                handleChatbotType(e.target.value);
+              }}
+            >
+              <MenuItem value={"text"}>Texto</MenuItem>
+			 {/*<MenuItem value={"button"}>Botão</MenuItem>*/}
+             {/*<MenuItem value={"list"}>Lista</MenuItem>*/}
+            </Select>
+            <FormHelperText>
+              {loadingChatbotType && "Atualizando..."}
+            </FormHelperText>
+          </FormControl>
+        </Grid>
+		{/* ENVIAR SAUDAÇÃO AO ACEITAR O TICKET */}
+        <Grid xs={12} sm={12} md={12} item>
+          <FormControl className={classes.selectContainer}>
+            <InputLabel id="sendGreetingAccepted-label">Enviar saudação ao aceitar o ticket</InputLabel>
             <Select
               labelId="sendGreetingAccepted-label"
               value={SendGreetingAccepted}
@@ -574,51 +567,20 @@ export default function Options(props) {
                 handleSendGreetingAccepted(e.target.value);
               }}
             >
-              <MenuItem value={"disabled"}>
-                {i18n.t("settings.settings.options.disabled")}
-              </MenuItem>
-              <MenuItem value={"enabled"}>
-                {i18n.t("settings.settings.options.enabled")}
-              </MenuItem>
+              <MenuItem value={"disabled"}>Desabilitado</MenuItem>
+              <MenuItem value={"enabled"}>Habilitado</MenuItem>
             </Select>
             <FormHelperText>
-              {loadingSendGreetingAccepted && i18n.t("settings.settings.options.updating")}
+              {loadingSendGreetingAccepted && "Atualizando..."}
             </FormHelperText>
           </FormControl>
         </Grid>
-
-        {/* ESCOLHER OPERADOR ALEATORIO */}
-        <Grid xs={12} sm={6} md={4} item>
+		{/* ENVIAR SAUDAÇÃO AO ACEITAR O TICKET */}
+		
+		{/* ENVIAR MENSAGEM DE TRANSFERENCIA DE SETOR/ATENDENTE */}
+        <Grid xs={12} sm={12} md={12} item>
           <FormControl className={classes.selectContainer}>
-            <InputLabel id="userRandom-label">
-              {i18n.t("settings.settings.options.userRandom")}
-            </InputLabel>
-            <Select
-              labelId="userRandom-label"
-              value={UserRandom}
-              onChange={async (e) => {
-                handleUserRandom(e.target.value);
-              }}
-            >
-              <MenuItem value={"disabled"}>
-                {i18n.t("settings.settings.options.disabled")}
-              </MenuItem>
-              <MenuItem value={"enabled"}>
-                {i18n.t("settings.settings.options.enabled")}
-              </MenuItem>
-            </Select>
-            <FormHelperText>
-              {loadingUserRandom && i18n.t("settings.settings.options.updating")}
-            </FormHelperText>
-          </FormControl>
-        </Grid>
-
-        {/* ENVIAR MENSAGEM DE TRANSFERENCIA DE SETOR/ATENDENTE */}
-        <Grid xs={12} sm={6} md={4} item>
-          <FormControl className={classes.selectContainer}>
-            <InputLabel id="sendMsgTransfTicket-label">
-              {i18n.t("settings.settings.options.sendMsgTransfTicket")}
-            </InputLabel>
+            <InputLabel id="sendMsgTransfTicket-label">Enviar mensagem de transferencia de Fila/agente</InputLabel>
             <Select
               labelId="sendMsgTransfTicket-label"
               value={SettingsTransfTicket}
@@ -626,98 +588,19 @@ export default function Options(props) {
                 handleSettingsTransfTicket(e.target.value);
               }}
             >
-              <MenuItem value={"disabled"}>
-                {i18n.t("settings.settings.options.disabled")}
-              </MenuItem>
-              <MenuItem value={"enabled"}>
-                {i18n.t("settings.settings.options.enabled")}
-              </MenuItem>
+              <MenuItem value={"disabled"}>Desabilitado</MenuItem>
+              <MenuItem value={"enabled"}>Habilitado</MenuItem>
             </Select>
             <FormHelperText>
-              {loadingSettingsTransfTicket && i18n.t("settings.settings.options.updating")}
+              {loadingSettingsTransfTicket && "Atualizando..."}
             </FormHelperText>
           </FormControl>
         </Grid>
-
-        {/* TIPO DO BOT */}
-        <Grid xs={12} sm={6} md={4} item>
+		
+		{/* ENVIAR SAUDAÇÃO QUANDO HOUVER SOMENTE 1 FILA */}
+        <Grid xs={12} sm={12} md={12} item>
           <FormControl className={classes.selectContainer}>
-            <InputLabel id="schedule-type-label">{i18n.t("settings.settings.options.chatBotType")}</InputLabel>
-            <Select
-              labelId="schedule-type-label"
-              value={chatBotType}
-              onChange={async (e) => {
-                handleChatBotType(e.target.value);
-              }}
-            >
-              <MenuItem value={"text"}>Texto</MenuItem>
-              {/* <MenuItem value={"button"}>{i18n.t("settings.settings.options.buttons")}</MenuItem>
-              <MenuItem value={"list"}>Lista</MenuItem> */}
-            </Select>
-            <FormHelperText>
-              {loadingScheduleType && i18n.t("settings.settings.options.updating")}
-            </FormHelperText>
-          </FormControl>
-        </Grid>
-
-        {/* AVISO SOBRE LIGAÇÃO DO WHATSAPP */}
-        <Grid xs={12} sm={6} md={4} item>
-          <FormControl className={classes.selectContainer}>
-            <InputLabel id="acceptCallWhatsapp-label">
-              {i18n.t("settings.settings.options.acceptCallWhatsapp")}
-            </InputLabel>
-            <Select
-              labelId="acceptCallWhatsapp-label"
-              value={AcceptCallWhatsapp}
-              onChange={async (e) => {
-                handleAcceptCallWhatsapp(e.target.value);
-              }}
-            >
-              <MenuItem value={"disabled"}>
-                {i18n.t("settings.settings.options.disabled")}
-              </MenuItem>
-              <MenuItem value={"enabled"}>
-                {i18n.t("settings.settings.options.enabled")}
-              </MenuItem>
-            </Select>
-            <FormHelperText>
-              {loadingAcceptCallWhatsapp && i18n.t("settings.settings.options.updating")}
-            </FormHelperText>
-          </FormControl>
-        </Grid>
-
-        {/* HABILITAR PARA O ATENDENTE RETIRAR O ASSINATURA */}
-        <Grid xs={12} sm={6} md={4} item>
-          <FormControl className={classes.selectContainer}>
-            <InputLabel id="sendSignMessage-label">
-              {i18n.t("settings.settings.options.sendSignMessage")}
-            </InputLabel>
-            <Select
-              labelId="sendSignMessage-label"
-              value={sendSignMessage}
-              onChange={async (e) => {
-                handleSendSignMessage(e.target.value);
-              }}
-            >
-              <MenuItem value={"disabled"}>
-                {i18n.t("settings.settings.options.disabled")}
-              </MenuItem>
-              <MenuItem value={"enabled"}>
-                {i18n.t("settings.settings.options.enabled")}
-              </MenuItem>
-            </Select>
-            <FormHelperText>
-              {loadingSendSignMessage && i18n.t("settings.settings.options.updating")}
-            </FormHelperText>
-          </FormControl>
-        </Grid>
-
-        {/* ENVIAR SAUDAÇÃO QUANDO HOUVER SOMENTE 1 FILA */}
-        <Grid xs={12} sm={6} md={4} item>
-          <FormControl className={classes.selectContainer}>
-            <InputLabel id="sendGreetingMessageOneQueues-label">
-              {i18n.t("settings.settings.options.sendGreetingMessageOneQueues")}
-            </InputLabel>
+            <InputLabel id="sendGreetingMessageOneQueues-label">Enviar saudação quando houver somente 1 fila</InputLabel>
             <Select
               labelId="sendGreetingMessageOneQueues-label"
               value={sendGreetingMessageOneQueues}
@@ -725,409 +608,284 @@ export default function Options(props) {
                 handleSendGreetingMessageOneQueues(e.target.value);
               }}
             >
-              <MenuItem value={"disabled"}>
-                {i18n.t("settings.settings.options.disabled")}
-              </MenuItem>
-              <MenuItem value={"enabled"}>
-                {i18n.t("settings.settings.options.enabled")}
-              </MenuItem>
+              <MenuItem value={"disabled"}>Desabilitado</MenuItem>
+              <MenuItem value={"enabled"}>Habilitado</MenuItem>
             </Select>
             <FormHelperText>
-              {loadingSendGreetingMessageOneQueues && i18n.t("settings.settings.options.updating")}
+              {loadingSendGreetingMessageOneQueues && "Atualizando..."}
             </FormHelperText>
           </FormControl>
         </Grid>
-
-        {/* ENVIAR MENSAGEM COM A POSIÇÃO DA FILA */}
-        <Grid xs={12} sm={6} md={4} item>
-          <FormControl className={classes.selectContainer}>
-            <InputLabel id="sendQueuePosition-label">
-              {i18n.t("settings.settings.options.sendQueuePosition")}
-            </InputLabel>
-            <Select
-              labelId="sendQueuePosition-label"
-              value={sendQueuePosition}
-              onChange={async (e) => {
-                handleSendQueuePosition(e.target.value);
-              }}
-            >
-              <MenuItem value={"disabled"}>
-                {i18n.t("settings.settings.options.disabled")}
-              </MenuItem>
-              <MenuItem value={"enabled"}>
-                {i18n.t("settings.settings.options.enabled")}
-              </MenuItem>
-            </Select>
-            <FormHelperText>
-              {loadingSendQueuePosition && i18n.t("settings.settings.options.updating")}
-            </FormHelperText>
-          </FormControl>
-        </Grid>
-
-        {/* ENVIAR MENSAGEM DE DESPEDIDA NO AGUARDANDO */}
-        <Grid xs={12} sm={6} md={4} item>
-          <FormControl className={classes.selectContainer}>
-            <InputLabel id="sendFarewellWaitingTicket-label">
-              {i18n.t("settings.settings.options.sendFarewellWaitingTicket")}
-            </InputLabel>
-            <Select
-              labelId="sendFarewellWaitingTicket-label"
-              value={sendFarewellWaitingTicket}
-              onChange={async (e) => {
-                handleSendFarewellWaitingTicket(e.target.value);
-              }}
-            >
-              <MenuItem value={"disabled"}>
-                {i18n.t("settings.settings.options.disabled")}
-              </MenuItem>
-              <MenuItem value={"enabled"}>
-                {i18n.t("settings.settings.options.enabled")}
-              </MenuItem>
-            </Select>
-            <FormHelperText>
-              {loadingSendFarewellWaitingTicket && i18n.t("settings.settings.options.updating")}
-            </FormHelperText>
-          </FormControl>
-        </Grid>
-
-        <Grid xs={12} sm={6} md={4} item>
-          <FormControl className={classes.selectContainer}>
-            <InputLabel id="acceptAudioMessageContact-label">
-              {i18n.t("settings.settings.options.acceptAudioMessageContact")}
-            </InputLabel>
-            <Select
-              labelId="acceptAudioMessageContact-label"
-              value={acceptAudioMessageContact}
-              onChange={async (e) => {
-                handleAcceptAudioMessageContact(e.target.value);
-              }}
-            >
-              <MenuItem value={"disabled"}>
-                {i18n.t("settings.settings.options.disabled")}
-              </MenuItem>
-              <MenuItem value={"enabled"}>
-                {i18n.t("settings.settings.options.enabled")}
-              </MenuItem>
-            </Select>
-            <FormHelperText>
-              {loadingAcceptAudioMessageContact && i18n.t("settings.settings.options.updating")}
-            </FormHelperText>
-          </FormControl>
-        </Grid>
-
-        <Grid xs={12} sm={6} md={4} item>
-          <FormControl className={classes.selectContainer}>
-            <InputLabel id="enableLGPD-label"> {i18n.t("settings.settings.options.enableLGPD")}</InputLabel>
-            <Select
-              labelId="enableLGPD-label"
-              value={enableLGPD}
-              onChange={async (e) => {
-                handleEnableLGPD(e.target.value);
-              }}
-            >
-              <MenuItem value={"disabled"}>{i18n.t("settings.settings.options.disabled")}</MenuItem>
-              <MenuItem value={"enabled"}>{i18n.t("settings.settings.options.enabled")}</MenuItem>
-            </Select>
-            <FormHelperText>
-              {loadingEnableLGPD && i18n.t("settings.settings.options.updating")}
-            </FormHelperText>
-          </FormControl>
-        </Grid>
-
-        <Grid xs={12} sm={6} md={4} item>
-          <FormControl className={classes.selectContainer}>
-            <InputLabel id="requiredTag-label"> {i18n.t("settings.settings.options.requiredTag")}</InputLabel>
-            <Select
-              labelId="requiredTag-label"
-              value={requiredTag}
-              onChange={async (e) => {
-                handleRequiredTag(e.target.value);
-              }}
-            >
-              <MenuItem value={"disabled"}>{i18n.t("settings.settings.options.disabled")}</MenuItem>
-              <MenuItem value={"enabled"}>{i18n.t("settings.settings.options.enabled")}</MenuItem>
-            </Select>
-            <FormHelperText>
-              {loadingRequiredTag && i18n.t("settings.settings.options.updating")}
-            </FormHelperText>
-          </FormControl>
-        </Grid>
-        <Grid xs={12} sm={6} md={4} item>
-          <FormControl className={classes.selectContainer}>
-            <InputLabel id="closeTicketOnTransfer-label"> {i18n.t("settings.settings.options.closeTicketOnTransfer")}</InputLabel>
-            <Select
-              labelId="closeTicketOnTransfer-label"
-              value={closeTicketOnTransfer}
-              onChange={async (e) => {
-                handleCloseTicketOnTransfer(e.target.value);
-              }}
-            >
-              <MenuItem value={false}>{i18n.t("settings.settings.options.disabled")}</MenuItem>
-              <MenuItem value={true}>{i18n.t("settings.settings.options.enabled")}</MenuItem>
-            </Select>
-            <FormHelperText>
-              {loadingCloseTicketOnTransfer && i18n.t("settings.settings.options.updating")}
-            </FormHelperText>
-          </FormControl>
-        </Grid>
-
-        <Grid xs={12} sm={6} md={4} item>
-          <FormControl className={classes.selectContainer}>
-            <InputLabel id="showNotificationPending-label"> {i18n.t("settings.settings.options.showNotificationPending")}</InputLabel>
-            <Select
-              labelId="showNotificationPending-label"
-              value={showNotificationPending}
-              onChange={async (e) => {
-                handleShowNotificationPending(e.target.value);
-              }}
-            >
-              <MenuItem value={false}>{i18n.t("settings.settings.options.disabled")}</MenuItem>
-              <MenuItem value={true}>{i18n.t("settings.settings.options.enabled")}</MenuItem>
-            </Select>
-            <FormHelperText>
-              {loadingShowNotificationPending && i18n.t("settings.settings.options.updating")}
-            </FormHelperText>
-          </FormControl>
-        </Grid>
-        {/* <Grid xs={12} sm={6} md={4} item>
-          <FormControl className={classes.selectContainer}>
-            <InputLabel id="DirectTicketsToWallets-label"> {i18n.t("settings.settings.options.DirectTicketsToWallets")}</InputLabel>
-            <Select
-              labelId="DirectTicketsToWallets-label"
-              value={directTicketsToWallets}
-              onChange={async (e) => {
-                handleDirectTicketsToWallets(e.target.value);
-              }}
-            >
-              <MenuItem value={false}>{i18n.t("settings.settings.options.disabled")}</MenuItem>
-              <MenuItem value={true}>{i18n.t("settings.settings.options.enabled")}</MenuItem>
-            </Select>
-            <FormHelperText>
-              {loadingDirectTicketsToWallets && i18n.t("settings.settings.options.updating")}
-            </FormHelperText>
-          </FormControl>
-        </Grid> */}
+	
+		
       </Grid>
-      <br></br>
-      {/*-----------------LGPD-----------------*/}
-      {enableLGPD === "enabled" && (
-        <>
-          <Grid spacing={3} container
-            style={{ marginBottom: 10 }}>
-            <Tabs
-              value={0}
-              indicatorColor="primary"
-              textColor="primary"
-              scrollButtons="on"
-              variant="scrollable"
-              className={classes.tab}
-            >
-              <Tab
+	  
+		<OnlyForSuperUser
+				user={currentUser}
+				yes={() => (
+				  <>
+					<Grid spacing={3} container>
+					  <Tabs
+						indicatorColor='primary'
+						textColor='primary'
+						scrollButtons='on'
+						variant='scrollable'
+						className={classes.tab}
+						style={{
+						  marginBottom: 20,
+						  marginTop: 20,
+						}}
+					  >
+						<Tab label='Configurações Globais' />
+					  </Tabs>
+					</Grid>
 
-                label={i18n.t("settings.settings.LGPD.title")} />
 
-            </Tabs>
-          </Grid>
-          <Grid spacing={1} container>
-            <Grid xs={12} sm={6} md={12} item>
-              <FormControl className={classes.selectContainer}>
-                <TextField
-                  id="lgpdMessage"
-                  name="lgpdMessage"
-                  margin="dense"
-                  multiline
-                  rows={3}
-                  label={i18n.t("settings.settings.LGPD.welcome")}
-                  variant="outlined"
-                  value={lgpdMessage}
-                  onChange={async (e) => {
-                    handleLGPDMessage(e.target.value);
-                  }}
-                >
-                </TextField>
-                <FormHelperText>
-                  {loadinglgpdMessage && i18n.t("settings.settings.options.updating")}
-                </FormHelperText>
-              </FormControl>
-            </Grid>
-            <Grid xs={12} sm={6} md={12} item>
-              <FormControl className={classes.selectContainer}>
-                <TextField
-                  id="lgpdLink"
-                  name="lgpdLink"
-                  margin="dense"
-                  label={i18n.t("settings.settings.LGPD.linkLGPD")}
-                  variant="outlined"
-                  value={lgpdLink}
-                  onChange={async (e) => {
-                    handleLGPDLink(e.target.value);
-                  }}
-                >
-                </TextField>
-                <FormHelperText>
-                  {loadingLGPDLink && i18n.t("settings.settings.options.updating")}
-                </FormHelperText>
-              </FormControl>
-            </Grid>
-            {/* LGPD Manter ou nao mensagem deletada pelo contato */}
-            <Grid xs={12} sm={6} md={4} item>
-              <FormControl className={classes.selectContainer}>
-                <InputLabel id="lgpdDeleteMessage-label">{i18n.t("settings.settings.LGPD.obfuscateMessageDelete")}</InputLabel>
-                <Select
-                  labelId="lgpdDeleteMessage-label"
-                  value={lgpdDeleteMessage}
-                  onChange={async (e) => {
-                    handleLGPDDeleteMessage(e.target.value);
-                  }}
-                >
-                  <MenuItem value={"disabled"}>{i18n.t("settings.settings.LGPD.disabled")}</MenuItem>
-                  <MenuItem value={"enabled"}>{i18n.t("settings.settings.LGPD.enabled")}</MenuItem>
-                </Select>
-                <FormHelperText>
-                  {loadingLGPDDeleteMessage && i18n.t("settings.settings.options.updating")}
-                </FormHelperText>
-              </FormControl>
-            </Grid>
-            {/* LGPD Sempre solicitar confirmaçao / conscentimento dos dados */}
-            <Grid xs={12} sm={6} md={4} item>
-              <FormControl className={classes.selectContainer}>
-                <InputLabel id="lgpdConsent-label">
-                  {i18n.t("settings.settings.LGPD.alwaysConsent")}
-                </InputLabel>
-                <Select
-                  labelId="lgpdConsent-label"
-                  value={lgpdConsent}
-                  onChange={async (e) => {
-                    handleLGPDConsent(e.target.value);
-                  }}
-                >
-                  <MenuItem value={"disabled"}>{i18n.t("settings.settings.LGPD.disabled")}</MenuItem>
-                  <MenuItem value={"enabled"}>{i18n.t("settings.settings.LGPD.enabled")}</MenuItem>
-                </Select>
-                <FormHelperText>
-                  {loadingLGPDConsent && i18n.t("settings.settings.options.updating")}
-                </FormHelperText>
-              </FormControl>
-            </Grid>
-            {/* LGPD Ofuscar número telefone para usuários */}
-            <Grid xs={12} sm={6} md={4} item>
-              <FormControl className={classes.selectContainer}>
-                <InputLabel id="lgpdHideNumber-label">
-                  {i18n.t("settings.settings.LGPD.obfuscatePhoneUser")}
-                </InputLabel>
-                <Select
-                  labelId="lgpdHideNumber-label"
-                  value={lgpdHideNumber}
-                  onChange={async (e) => {
-                    handleLGPDHideNumber(e.target.value);
-                  }}
-                >
-                  <MenuItem value={"disabled"}>{i18n.t("settings.settings.LGPD.disabled")}</MenuItem>
-                  <MenuItem value={"enabled"}>{i18n.t("settings.settings.LGPD.enabled")}</MenuItem>
-                </Select>
-                <FormHelperText>
-                  {loadingLGPDHideNumber && i18n.t("settings.settings.options.updating")}
-                </FormHelperText>
-              </FormControl>
-            </Grid>
-          </Grid>
-        </>
-      )}
-      <Grid spacing={1} container>
+            <Grid xs={12} sm={12} md={12} item>
+                <FormControl className={classes.selectContainer}>
+                  <InputLabel id='allowregister-label'>
+                    Registro (Inscrição) Permitida?
+                  </InputLabel>
+                  <Select
+                    labelId='allowregister-label'
+                    value={allowregister}
+                    onChange={async (e) => {
+                      handleallowregister(e.target.value);
+                    }}
+                  >
+                    <MenuItem value={'disabled'}>Não</MenuItem>
+                    <MenuItem value={'enabled'}>Sim</MenuItem>
+                  </Select>
+                  <FormHelperText>
+                    {loadingallowregister && 'Atualizando...'}
+                  </FormHelperText>
+                </FormControl>
+              </Grid>
+
+				  <Grid xs={12} sm={12} md={12} item>
+                <FormControl className={classes.selectContainer}>
+                  <InputLabel id='viewregister-label'>
+                    Registro (Inscrição) Visível?
+                  </InputLabel>
+                  <Select
+                    labelId='viewregister-label'
+                    value={viewregister}
+                    onChange={async (e) => {
+                      handleviewregister(e.target.value);
+                    }}
+                  >
+                    <MenuItem value={'disabled'}>Não</MenuItem>
+                    <MenuItem value={'enabled'}>Sim</MenuItem>
+                  </Select>
+                  <FormHelperText>
+                    {loadingviewregister && 'Atualizando...'}
+                  </FormHelperText>
+                </FormControl>
+              </Grid>
+			  
+			                <Grid xs={12} sm={12} md={12} item>
+                <FormControl className={classes.selectContainer}>
+                  <InputLabel id='trial-label'>Tempo de Trial?</InputLabel>
+                  <Select
+                    labelId='trial-label'
+                    value={trial}
+                    onChange={async (e) => {
+                      handletrial(e.target.value);
+                    }}
+                  >
+                    <MenuItem value={'1'}>1</MenuItem>
+                    <MenuItem value={'2'}>2</MenuItem>
+                    <MenuItem value={'3'}>3</MenuItem>
+                    <MenuItem value={'4'}>4</MenuItem>
+                    <MenuItem value={'5'}>5</MenuItem>
+                    <MenuItem value={'6'}>6</MenuItem>
+                    <MenuItem value={'7'}>7</MenuItem>
+                  </Select>
+                  <FormHelperText>
+                    {loadingtrial && 'Atualizando...'}
+                  </FormHelperText>
+                </FormControl>
+              </Grid>
+
+      </>
+        )}
+      />
+	        <Grid spacing={3} container>
+        <Tabs
+          indicatorColor="primary"
+          textColor="primary"
+          scrollButtons="on"
+          variant="scrollable"
+          className={classes.tab}
+          style={{
+            marginBottom: 20,
+            marginTop: 20
+          }}
+        >
+          <Tab
+
+            label="INTEGRAÇÕES" />
+
+        </Tabs>
+
+      </Grid>
+      {/*-----------------IXC-----------------*/}
+      <Grid spacing={3} container
+        style={{ marginBottom: 10 }}>
+        <Tabs
+          indicatorColor="primary"
+          textColor="primary"
+          scrollButtons="on"
+          variant="scrollable"
+          className={classes.tab}
+        >
+          <Tab
+
+            label="IXC" />
+
+        </Tabs>
         <Grid xs={12} sm={6} md={6} item>
           <FormControl className={classes.selectContainer}>
             <TextField
-              id="transferMessage"
-              name="transferMessage"
+              id="ipixc"
+              name="ipixc"
               margin="dense"
-              multiline
-              rows={3}
-              label={i18n.t("settings.settings.customMessages.transferMessage")}
+              label="IP do IXC"
               variant="outlined"
-              value={transferMessage}
-              required={SettingsTransfTicket === "enabled"}
+              value={ipixcType}
               onChange={async (e) => {
-                handletransferMessage(e.target.value);
+                handleChangeIPIxc(e.target.value);
               }}
             >
             </TextField>
             <FormHelperText>
-              {loadingTransferMessage && i18n.t("settings.settings.options.updating")}
+              {loadingIpIxcType && "Atualizando..."}
             </FormHelperText>
           </FormControl>
         </Grid>
-
         <Grid xs={12} sm={6} md={6} item>
           <FormControl className={classes.selectContainer}>
             <TextField
-              id="greetingAcceptedMessage"
-              name="greetingAcceptedMessage"
+              id="tokenixc"
+              name="tokenixc"
               margin="dense"
-              multiline
-              rows={3}
-              label={i18n.t("settings.settings.customMessages.greetingAcceptedMessage")}
+              label="Token do IXC"
               variant="outlined"
-              value={greetingAcceptedMessage}
-              required={SendGreetingAccepted === "enabled"}
+              value={tokenixcType}
               onChange={async (e) => {
-                handleGreetingAcceptedMessage(e.target.value);
+                handleChangeTokenIxc(e.target.value);
               }}
             >
             </TextField>
             <FormHelperText>
-              {loadingGreetingAcceptedMessage && i18n.t("settings.settings.options.updating")}
+              {loadingTokenIxcType && "Atualizando..."}
             </FormHelperText>
           </FormControl>
         </Grid>
+      </Grid>
+      {/*-----------------MK-AUTH-----------------*/}
+      <Grid spacing={3} container
+        style={{ marginBottom: 10 }}>
+        <Tabs
+          indicatorColor="primary"
+          textColor="primary"
+          scrollButtons="on"
+          variant="scrollable"
+          className={classes.tab}
+        >
+          <Tab label="MK-AUTH" />
 
-        <Grid xs={12} sm={6} md={6} item>
+        </Tabs>
+        <Grid xs={12} sm={12} md={4} item>
           <FormControl className={classes.selectContainer}>
             <TextField
-              id="AcceptCallWhatsappMessage"
-              name="AcceptCallWhatsappMessage"
+              id="ipmkauth"
+              name="ipmkauth"
               margin="dense"
-              multiline
-              rows={3}
-              label={i18n.t("settings.settings.customMessages.AcceptCallWhatsappMessage")}
+              label="Ip Mk-Auth"
               variant="outlined"
-              required={AcceptCallWhatsapp === "disabled"}
-              value={AcceptCallWhatsappMessage}
+              value={ipmkauthType}
               onChange={async (e) => {
-                handleAcceptCallWhatsappMessage(e.target.value);
+                handleChangeIpMkauth(e.target.value);
               }}
             >
             </TextField>
             <FormHelperText>
-              {loadingAcceptCallWhatsappMessage && i18n.t("settings.settings.options.updating")}
+              {loadingIpMkauthType && "Atualizando..."}
             </FormHelperText>
           </FormControl>
         </Grid>
-
-        <Grid xs={12} sm={6} md={6} item>
+        <Grid xs={12} sm={12} md={4} item>
           <FormControl className={classes.selectContainer}>
             <TextField
-              id="sendQueuePositionMessage"
-              name="sendQueuePositionMessage"
+              id="clientidmkauth"
+              name="clientidmkauth"
               margin="dense"
-              multiline
-              required={sendQueuePosition === "enabled"}
-              rows={3}
-              label={i18n.t("settings.settings.customMessages.sendQueuePositionMessage")}
+              label="Client Id"
               variant="outlined"
-              value={sendQueuePositionMessage}
+              value={clientidmkauthType}
               onChange={async (e) => {
-                handlesendQueuePositionMessage(e.target.value);
+                handleChangeClientIdMkauth(e.target.value);
               }}
             >
             </TextField>
             <FormHelperText>
-              {loadingSendQueuePositionMessage && i18n.t("settings.settings.options.updating")}
+              {loadingClientIdMkauthType && "Atualizando..."}
             </FormHelperText>
           </FormControl>
         </Grid>
+        <Grid xs={12} sm={12} md={4} item>
+          <FormControl className={classes.selectContainer}>
+            <TextField
+              id="clientsecretmkauth"
+              name="clientsecretmkauth"
+              margin="dense"
+              label="Client Secret"
+              variant="outlined"
+              value={clientsecretmkauthType}
+              onChange={async (e) => {
+                handleChangeClientSecrectMkauth(e.target.value);
+              }}
+            >
+            </TextField>
+            <FormHelperText>
+              {loadingClientSecrectMkauthType && "Atualizando..."}
+            </FormHelperText>
+          </FormControl>
+        </Grid>
+      </Grid>
+      {/*-----------------ASAAS-----------------*/}
+      <Grid spacing={3} container
+        style={{ marginBottom: 10 }}>
+        <Tabs
+          indicatorColor="primary"
+          textColor="primary"
+          scrollButtons="on"
+          variant="scrollable"
+          className={classes.tab}
+        >
+          <Tab label="ASAAS" />
 
-        
-              
+        </Tabs>
+        <Grid xs={12} sm={12} md={12} item>
+          <FormControl className={classes.selectContainer}>
+            <TextField
+              id="asaas"
+              name="asaas"
+              margin="dense"
+              label="Token Asaas"
+              variant="outlined"
+              value={asaasType}
+              onChange={async (e) => {
+                handleChangeAsaas(e.target.value);
+              }}
+            >
+            </TextField>
+            <FormHelperText>
+              {loadingAsaasType && "Atualizando..."}
+            </FormHelperText>
+          </FormControl>
+        </Grid>
       </Grid>
     </>
   );

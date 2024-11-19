@@ -34,9 +34,8 @@ import TableRowSkeleton from "../../components/TableRowSkeleton";
 import FileModal from "../../components/FileModal";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import toastError from "../../errors/toastError";
-// import { SocketContext } from "../../context/Socket/SocketContext";
+import { SocketContext } from "../../context/Socket/SocketContext";
 import { AuthContext } from "../../context/Auth/AuthContext";
-import ForbiddenPage from "../../components/ForbiddenPage";
 
 const reducer = (state, action) => {
     if (action.type === "LOAD_FILES") {
@@ -67,7 +66,7 @@ const reducer = (state, action) => {
         }
     }
 
-    if (action.type === "DELETE_FILE") {
+    if (action.type === "DELETE_TAG") {
         const fileListId = action.payload;
 
         const fileListIndex = state.findIndex((s) => s.id === fileListId);
@@ -94,9 +93,7 @@ const useStyles = makeStyles((theme) => ({
 const FileLists = () => {
     const classes = useStyles();
 
-    //   const socketManager = useContext(SocketContext);
-    const { user, socket } = useContext(AuthContext);
-
+    const { user } = useContext(AuthContext);
 
     const [loading, setLoading] = useState(false);
     const [pageNumber, setPageNumber] = useState(1);
@@ -121,6 +118,8 @@ const FileLists = () => {
         }
     }, [searchParam, pageNumber]);
 
+    const socketManager = useContext(SocketContext);
+
     useEffect(() => {
         dispatch({ type: "RESET" });
         setPageNumber(1);
@@ -135,23 +134,22 @@ const FileLists = () => {
     }, [searchParam, pageNumber, fetchFileLists]);
 
     useEffect(() => {
-        // const socket = socketManager.GetSocket(user.companyId, user.id);
+        const socket = socketManager.getSocket(user.companyId);
 
-        const onFileEvent = (data) => {
+        socket.on(`company-${user.companyId}-file`, (data) => {
             if (data.action === "update" || data.action === "create") {
                 dispatch({ type: "UPDATE_FILES", payload: data.files });
             }
 
             if (data.action === "delete") {
-                dispatch({ type: "DELETE_FILE", payload: +data.fileId });
+                dispatch({ type: "DELETE_USER", payload: +data.fileId });
             }
-        };
+        });
 
-        socket.on(`company-${user.companyId}-file`, onFileEvent);
         return () => {
-            socket.off(`company-${user.companyId}-file`, onFileEvent);
+            socket.disconnect();
         };
-    }, [socket]);
+    }, [socketManager, user]);
 
     const handleOpenFileListModal = () => {
         setSelectedFileList(null);
@@ -217,79 +215,74 @@ const FileLists = () => {
                 aria-labelledby="form-dialog-title"
                 fileListId={selectedFileList && selectedFileList.id}
             />
-            {user.profile === "user" ?
-                <ForbiddenPage />
-                :
-                <>
-                    <MainHeader>
-                        <Title>{i18n.t("files.title")} ({files.length})</Title>
-                        <MainHeaderButtonsWrapper>
-                            <TextField
-                                placeholder={i18n.t("contacts.searchPlaceholder")}
-                                type="search"
-                                value={searchParam}
-                                onChange={handleSearch}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <SearchIcon style={{ color: "gray" }} />
-                                        </InputAdornment>
-                                    ),
-                                }}
-                            />
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={handleOpenFileListModal}
-                            >
-                                {i18n.t("files.buttons.add")}
-                            </Button>
-                        </MainHeaderButtonsWrapper>
-                    </MainHeader>
-                    <Paper
-                        className={classes.mainPaper}
-                        variant="outlined"
-                        onScroll={handleScroll}
+            <MainHeader>
+                <Title>{i18n.t("files.title")} ({files.length})</Title>
+                <MainHeaderButtonsWrapper>
+                    <TextField
+                        placeholder={i18n.t("contacts.searchPlaceholder")}
+                        type="search"
+                        value={searchParam}
+                        onChange={handleSearch}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon style={{ color: "gray" }} />
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleOpenFileListModal}
                     >
-                        <Table size="small">
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell align="center">{i18n.t("files.table.name")}</TableCell>
+                        {i18n.t("files.buttons.add")}
+                    </Button>
+                </MainHeaderButtonsWrapper>
+            </MainHeader>
+            <Paper
+                className={classes.mainPaper}
+                variant="outlined"
+                onScroll={handleScroll}
+            >
+                <Table size="small">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell align="center">{i18n.t("files.table.name")}</TableCell>
+                            <TableCell align="center">
+                                {i18n.t("files.table.actions")}
+                            </TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        <>
+                            {files.map((fileList) => (
+                                <TableRow key={fileList.id}>
                                     <TableCell align="center">
-                                        {i18n.t("files.table.actions")}
+                                        {fileList.name}
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        <IconButton size="small" onClick={() => handleEditFileList(fileList)}>
+                                            <EditIcon />
+                                        </IconButton>
+
+                                        <IconButton
+                                            size="small"
+                                            onClick={(e) => {
+                                                setConfirmModalOpen(true);
+                                                setDeletingFileList(fileList);
+                                            }}
+                                        >
+                                            <DeleteOutlineIcon />
+                                        </IconButton>
                                     </TableCell>
                                 </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                <>
-                                    {files.map((fileList) => (
-                                        <TableRow key={fileList.id}>
-                                            <TableCell align="center">
-                                                {fileList.name}
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                <IconButton size="small" onClick={() => handleEditFileList(fileList)}>
-                                                    <EditIcon />
-                                                </IconButton>
-
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={(e) => {
-                                                        setConfirmModalOpen(true);
-                                                        setDeletingFileList(fileList);
-                                                    }}
-                                                >
-                                                    <DeleteOutlineIcon />
-                                                </IconButton>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                    {loading && <TableRowSkeleton columns={4} />}
-                                </>
-                            </TableBody>
-                        </Table>
-                    </Paper>
-                </>}
+                            ))}
+                            {loading && <TableRowSkeleton columns={4} />}
+                        </>
+                    </TableBody>
+                </Table>
+            </Paper>
         </MainContainer>
     );
 };

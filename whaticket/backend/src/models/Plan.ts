@@ -7,8 +7,7 @@ import {
   PrimaryKey,
   AutoIncrement,
   AllowNull,
-  Unique,
-  Default
+  Unique
 } from "sequelize-typescript";
 
 @Table
@@ -33,28 +32,7 @@ class Plan extends Model<Plan> {
   queues: number;
 
   @Column
-  amount: string;   
-
-  @Column
-  useWhatsapp: boolean;   
-
-  @Column
-  useFacebook: boolean;   
-
-  @Column
-  useInstagram: boolean;   
-  
-  @Column
-  useCampaigns: boolean;   
-
-  @Column
-  useSchedules: boolean;   
-
-  @Column
-  useInternalChat: boolean;   
-  
-  @Column
-  useExternalApi: boolean;   
+  value: number;
 
   @CreatedAt
   createdAt: Date;
@@ -63,26 +41,28 @@ class Plan extends Model<Plan> {
   updatedAt: Date;
 
   @Column
+  useSchedules: boolean;   
+
+  @Column
+  useCampaigns: boolean; 
+  
+  @Column
+  useInternalChat: boolean;   
+  
+  @Column
+  useExternalApi: boolean;   
+
+  @Column
   useKanban: boolean;
-
-  @Column
-  trial: boolean;
-
-  @Column
-  trialDays: number;
-
-  @Column
-  recurrence: string;
 
   @Column
   useOpenAi: boolean;
 
   @Column
   useIntegrations: boolean;
-
-  @Default(true)
+  
   @Column
-  isPublic: boolean;
+  useInternal: boolean; 
 }
 
 export default Plan;

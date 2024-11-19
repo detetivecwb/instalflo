@@ -2,8 +2,6 @@ import { Sequelize, Op } from "sequelize";
 import Queue from "../../models/Queue";
 import Company from "../../models/Company";
 import User from "../../models/User";
-import Plan from "../../models/Plan";
-import Ticket from "../../models/Ticket";
 
 interface Request {
   searchParam?: string;
@@ -44,51 +42,18 @@ const ListUsersService = async ({
 
   const { count, rows: users } = await User.findAndCountAll({
     where: whereCondition,
-    attributes: [
-      "name",
-      "id",
-      "email",
-      "companyId",
-      "profile",
-      "online",
-      "startWork",
-      "endWork",
-      "profileImage"
-    ],
+    attributes: ["name", "id", "email", "companyId", "profile", "createdAt", "online"],
     limit,
     offset,
-    order: [["name", "ASC"]],
+    order: [["createdAt", "DESC"]],
     include: [
       { model: Queue, as: "queues", attributes: ["id", "name", "color"] },
-      {
-        model: Company,
-        as: "company",
-        attributes: ["id", "name", "dueDate", "document"],
-        // include: [
-        //   {
-        //     model: Plan, as: "plan",
-        //     attributes: ["id",
-        //       "name",
-        //       "amount",
-        //       "useWhatsapp",
-        //       "useFacebook",
-        //       "useInstagram",
-        //       "useCampaigns",
-        //       "useSchedules",
-        //       "useInternalChat",
-        //       "useExternalApi",
-        //       "useIntegrations",
-        //       "useOpenAi",
-        //       "useKanban"
-        //     ]
-        //   },
-        // ]
-      }
+      { model: Company, as: "company", attributes: ["id", "name"] }
     ]
   });
 
   const hasMore = count > offset + users.length;
-  console.log(hasMore, count)
+
   return {
     users,
     count,

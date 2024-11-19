@@ -16,12 +16,10 @@ import { startOfHour, parseISO, format } from "date-fns";
 import Title from "./Title";
 import useTickets from "../../hooks/useTickets";
 
-const Chart = ({ dateStartTicket, dateEndTicket, queueTicket }) => {
+const Chart = ({ queueTicket }) => {
 	const theme = useTheme();
 
 	const { tickets, count } = useTickets({
-		dateStart: dateStartTicket,
-		dateEnd: dateEndTicket,
 		queueIds: queueTicket ? `[${queueTicket}]` : "[]",
 	});
 

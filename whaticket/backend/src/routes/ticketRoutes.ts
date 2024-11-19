@@ -9,11 +9,7 @@ ticketRoutes.get("/tickets", isAuth, TicketController.index);
 
 ticketRoutes.get("/tickets/:ticketId", isAuth, TicketController.show);
 
-ticketRoutes.get("/tickets-log/:ticketId", isAuth, TicketController.showLog);
-
 ticketRoutes.get("/ticket/kanban", isAuth, TicketController.kanban);
-
-ticketRoutes.get("/ticketreport/reports", isAuth, TicketController.report);
 
 ticketRoutes.get("/tickets/u/:uuid", isAuth, TicketController.showFromUUID);
 

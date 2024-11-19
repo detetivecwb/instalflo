@@ -1,55 +1,52 @@
-import React, { useState, useEffect } from "react";
 import {
-  makeStyles,
-  Paper,
-  Grid,
   FormControl,
+  Grid,
+  IconButton,
   InputLabel,
   MenuItem,
-  TextField,
+  Paper,
+  Select,
   Table,
-  TableHead,
   TableBody,
   TableCell,
+  TableHead,
   TableRow,
-  IconButton,
-  Select,
+  TextField,
+  makeStyles,
 } from "@material-ui/core";
-import { Formik, Form, Field } from "formik";
+import { Field, Form, Formik } from "formik";
+import React, { useEffect, useState } from "react";
 import ButtonWithSpinner from "../ButtonWithSpinner";
 import ConfirmationModal from "../ConfirmationModal";
 
 import { Edit as EditIcon } from "@material-ui/icons";
 
+import { has, head, isArray } from "lodash";
 import { toast } from "react-toastify";
 import useCompanies from "../../hooks/useCompanies";
-import usePlans from "../../hooks/usePlans";
-import ModalUsers from "../ModalUsers";
-import api from "../../services/api";
-import { head, isArray, has } from "lodash";
 import { useDate } from "../../hooks/useDate";
+import usePlans from "../../hooks/usePlans";
+import api from "../../services/api";
+import ModalUsers from "../ModalUsers";
 
 import moment from "moment";
-import { i18n } from "../../translate/i18n";
 
 const useStyles = makeStyles((theme) => ({
   root: {
     width: "100%",
-    padding: "2px"
   },
   mainPaper: {
     width: "100%",
     flex: 1,
-    // padding: theme.spacing(2), //comentado para retirar o scroll do Empresas
+    padding: theme.spacing(2),
   },
   fullWidth: {
     width: "100%",
   },
   tableContainer: {
     width: "100%",
-    // overflowX: "scroll",
-    // ...theme.scrollbarStyles,
-    padding: "2px",
+    overflowX: "scroll",
+    ...theme.scrollbarStyles,
   },
   textfield: {
     width: "100%",
@@ -58,16 +55,16 @@ const useStyles = makeStyles((theme) => ({
     textAlign: "right",
   },
   row: {
-    // paddingTop: theme.spacing(2),
-    // paddingBottom: theme.spacing(2),
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
   },
   control: {
-    // paddingRight: theme.spacing(1),
-    // paddingLeft: theme.spacing(1),
+    paddingRight: theme.spacing(1),
+    paddingLeft: theme.spacing(1),
   },
   buttonContainer: {
     textAlign: "right",
-    // padding: theme.spacing(1),
+    padding: theme.spacing(1),
   },
 }));
 
@@ -84,10 +81,9 @@ export function CompanyForm(props) {
     phone: "",
     planId: "",
     status: true,
-    // campaignsEnabled: false,
+    campaignsEnabled: false,
     dueDate: "",
     recurrence: "",
-    password: "",
     ...initialValue,
   });
 
@@ -202,11 +198,11 @@ export function CompanyForm(props) {
       >
         {(values, setValues) => (
           <Form className={classes.fullWidth}>
-            <Grid spacing={1} justifyContent="center" container>
-              <Grid xs={12} sm={6} md={3} item>
+            <Grid spacing={2} justifyContent="flex-end" container>
+              <Grid xs={12} sm={6} md={4} item>
                 <Field
                   as={TextField}
-                  label={i18n.t("compaies.table.name")}
+                  label="Nome"
                   name="name"
                   variant="outlined"
                   className={classes.fullWidth}
@@ -216,7 +212,7 @@ export function CompanyForm(props) {
               <Grid xs={12} sm={6} md={2} item>
                 <Field
                   as={TextField}
-                  label={i18n.t("compaies.table.email")}
+                  label="E-mail"
                   name="email"
                   variant="outlined"
                   className={classes.fullWidth}
@@ -227,17 +223,7 @@ export function CompanyForm(props) {
               <Grid xs={12} sm={6} md={2} item>
                 <Field
                   as={TextField}
-                  label={i18n.t("compaies.table.password")}
-                  name="password"
-                  variant="outlined"
-                  className={classes.fullWidth}
-                  margin="dense"
-                />
-              </Grid>
-              <Grid xs={12} sm={6} md={2} item>
-                <Field
-                  as={TextField}
-                  label={i18n.t("compaies.table.phone")}
+                  label="Telefone"
                   name="phone"
                   variant="outlined"
                   className={classes.fullWidth}
@@ -246,11 +232,11 @@ export function CompanyForm(props) {
               </Grid>
               <Grid xs={12} sm={6} md={2} item>
                 <FormControl margin="dense" variant="outlined" fullWidth>
-                  <InputLabel htmlFor="plan-selection">{i18n.t("compaies.table.plan")}</InputLabel>
+                  <InputLabel htmlFor="plan-selection">Plano</InputLabel>
                   <Field
                     as={Select}
                     id="plan-selection"
-                    label={i18n.t("compaies.table.plan")}
+                    label="Plano"
                     labelId="plan-selection-label"
                     name="planId"
                     margin="dense"
@@ -264,50 +250,23 @@ export function CompanyForm(props) {
                   </Field>
                 </FormControl>
               </Grid>
-              <Grid xs={12} sm={6} md={1} item>
+              <Grid xs={12} sm={6} md={2} item>
                 <FormControl margin="dense" variant="outlined" fullWidth>
-                  <InputLabel htmlFor="status-selection">{i18n.t("compaies.table.active")}</InputLabel>
+                  <InputLabel htmlFor="status-selection">Status</InputLabel>
                   <Field
                     as={Select}
                     id="status-selection"
-                    label={i18n.t("compaies.table.active")}
+                    label="Status"
                     labelId="status-selection-label"
                     name="status"
                     margin="dense"
                   >
-                    <MenuItem value={true}>{i18n.t("compaies.table.yes")}</MenuItem>
-                    <MenuItem value={false}>{i18n.t("compaies.table.no")}</MenuItem>
+                    <MenuItem value={true}>Sim</MenuItem>
+                    <MenuItem value={false}>Não</MenuItem>
                   </Field>
                 </FormControl>
               </Grid>
-              {/* <Grid xs={12} sm={6} md={3} item>
-                <FormControl margin="dense" variant="outlined" fullWidth>
-                  <InputLabel htmlFor="payment-method-selection">
-                    Método de Pagamento
-                  </InputLabel>
-                  <Field
-                    as={Select}
-                    id="payment-method-selection"
-                    label="Método de Pagamento"
-                    labelId="payment-method-selection-label"
-                    name="paymentMethod"
-                    margin="dense"
-                  >
-                    <MenuItem value={"pix"}>PIX</MenuItem>
-                  </Field>
-                </FormControl>
-              </Grid> */}
               <Grid xs={12} sm={6} md={2} item>
-                <Field
-                  as={TextField}
-                  label={i18n.t("compaies.table.document")}
-                  name="document"
-                  variant="outlined"
-                  className={classes.fullWidth}
-                  margin="dense"
-                />
-              </Grid>
-              {/* <Grid xs={12} sm={6} md={2} item>
                 <FormControl margin="dense" variant="outlined" fullWidth>
                   <InputLabel htmlFor="status-selection">Campanhas</InputLabel>
                   <Field
@@ -322,12 +281,12 @@ export function CompanyForm(props) {
                     <MenuItem value={false}>Desabilitadas</MenuItem>
                   </Field>
                 </FormControl>
-              </Grid> */}
+              </Grid>
               <Grid xs={12} sm={6} md={2} item>
                 <FormControl variant="outlined" fullWidth>
                   <Field
                     as={TextField}
-                    label={i18n.t("compaies.table.dueDate")}
+                    label="Data de Vencimento"
                     type="date"
                     name="dueDate"
                     InputLabelProps={{
@@ -342,7 +301,7 @@ export function CompanyForm(props) {
               <Grid xs={12} sm={6} md={2} item>
                 <FormControl margin="dense" variant="outlined" fullWidth>
                   <InputLabel htmlFor="recorrencia-selection">
-                  {i18n.t("compaies.table.recurrence")}
+                    Recorrência
                   </InputLabel>
                   <Field
                     as={Select}
@@ -352,11 +311,11 @@ export function CompanyForm(props) {
                     name="recurrence"
                     margin="dense"
                   >
-                    <MenuItem value="MENSAL">{i18n.t("compaies.table.monthly")}</MenuItem>
-                    <MenuItem value="BIMESTRAL">{i18n.t("compaies.table.bimonthly")}</MenuItem>
-                    <MenuItem value="TRIMESTRAL">{i18n.t("compaies.table.quarterly")}</MenuItem>
-                    <MenuItem value="SEMESTRAL">{i18n.t("compaies.table.semester")}</MenuItem>
-                    <MenuItem value="ANUAL">{i18n.t("compaies.table.yearly")}</MenuItem>
+                    <MenuItem value="MENSAL">Mensal</MenuItem>
+                    {/*<MenuItem value="BIMESTRAL">Bimestral</MenuItem>*/}
+                    {/*<MenuItem value="TRIMESTRAL">Trimestral</MenuItem>*/}
+                    {/*<MenuItem value="SEMESTRAL">Semestral</MenuItem>*/}
+                    {/*<MenuItem value="ANUAL">Anual</MenuItem>*/}
                   </Field>
                 </FormControl>
               </Grid>
@@ -370,7 +329,7 @@ export function CompanyForm(props) {
                       onClick={() => onCancel()}
                       variant="contained"
                     >
-                      {i18n.t("compaies.table.clear")}
+                      Limpar
                     </ButtonWithSpinner>
                   </Grid>
                   {record.id !== undefined ? (
@@ -384,7 +343,7 @@ export function CompanyForm(props) {
                           variant="contained"
                           color="secondary"
                         >
-                          {i18n.t("compaies.table.delete")}
+                          Excluir
                         </ButtonWithSpinner>
                       </Grid>
                       <Grid xs={6} md={2} item>
@@ -396,10 +355,10 @@ export function CompanyForm(props) {
                           variant="contained"
                           color="primary"
                         >
-                          {i18n.t("compaies.table.dueDate")}
+                          + Vencimento
                         </ButtonWithSpinner>
                       </Grid>
-                      {/* <Grid xs={6} md={1} item>
+                      <Grid xs={6} md={1} item>
                         <ButtonWithSpinner
                           style={{ marginTop: 7 }}
                           className={classes.fullWidth}
@@ -408,9 +367,9 @@ export function CompanyForm(props) {
                           variant="contained"
                           color="primary"
                         >
-                          {i18n.t("compaies.table.user")}
+                          Usuário
                         </ButtonWithSpinner>
-                      </Grid> */}
+                      </Grid>
                     </>
                   ) : null}
                   <Grid xs={6} md={1} item>
@@ -422,7 +381,7 @@ export function CompanyForm(props) {
                       variant="contained"
                       color="primary"
                     >
-                      {i18n.t("compaies.table.save")}
+                      Salvar
                     </ButtonWithSpinner>
                   </Grid>
                 </Grid>
@@ -438,7 +397,7 @@ export function CompanyForm(props) {
 export function CompaniesManagerGrid(props) {
   const { records, onSelect } = props;
   const classes = useStyles();
-  const { dateToClient, datetimeToClient } = useDate();
+  const { dateToClient } = useDate();
 
   const renderStatus = (row) => {
     return row.status === false ? "Não" : "Sim";
@@ -448,23 +407,19 @@ export function CompaniesManagerGrid(props) {
     return row.planId !== null ? row.plan.name : "-";
   };
 
-  const renderPlanValue = (row) => {
-    return row.planId !== null ? row.plan.amount ? row.plan.amount.toLocaleString('pt-br', { minimumFractionDigits: 2 }) : '00.00' : "-";
+  const renderCampaignsStatus = (row) => {
+    if (
+      has(row, "settings") &&
+      isArray(row.settings) &&
+      row.settings.length > 0
+    ) {
+      const setting = row.settings.find((s) => s.key === "campaignsEnabled");
+      if (setting) {
+        return setting.value === "true" ? "Habilitadas" : "Desabilitadas";
+      }
+    }
+    return "Desabilitadas";
   };
-
-  // const renderCampaignsStatus = (row) => {
-  //   if (
-  //     has(row, "settings") &&
-  //     isArray(row.settings) &&
-  //     row.settings.length > 0
-  //   ) {
-  //     const setting = row.settings.find((s) => s.key === "campaignsEnabled");
-  //     if (setting) {
-  //       return setting.value === "true" ? "Habilitadas" : "Desabilitadas";
-  //     }
-  //   }
-  //   return "Desabilitadas";
-  // };
 
   const rowStyle = (record) => {
     if (moment(record.dueDate).isValid()) {
@@ -488,23 +443,22 @@ export function CompaniesManagerGrid(props) {
     <Paper className={classes.tableContainer}>
       <Table
         className={classes.fullWidth}
-        // size="small"
-        padding="none"
+        size="small"
         aria-label="a dense table"
       >
         <TableHead>
           <TableRow>
-            <TableCell align="center" style={{ width: "1%" }}>#</TableCell>
-            <TableCell align="left">{i18n.t("compaies.table.name")}</TableCell>
-            <TableCell align="left">{i18n.t("compaies.table.email")}</TableCell>
-            <TableCell align="center">{i18n.t("compaies.table.phone")}</TableCell>
-            <TableCell align="center">{i18n.t("compaies.table.plan")}</TableCell>
-            <TableCell align="center">{i18n.t("compaies.table.value")}</TableCell>
-            {/* <TableCell align="center">Campanhas</TableCell> */}
-            <TableCell align="center">{i18n.t("compaies.table.active")}</TableCell>
-            <TableCell align="center">{i18n.t("compaies.table.createdAt")}</TableCell>
-            <TableCell align="center">{i18n.t("compaies.table.dueDate")}</TableCell>
-            <TableCell align="center">{i18n.t("compaies.table.lastLogin")}</TableCell>
+            <TableCell align="center" style={{ width: "1%" }}>
+              #
+            </TableCell>
+            <TableCell align="left">Nome</TableCell>
+            <TableCell align="left">E-mail</TableCell>
+            <TableCell align="left">Telefone</TableCell>
+            <TableCell align="left">Plano</TableCell>
+            <TableCell align="left">Campanhas</TableCell>
+            <TableCell align="left">Status</TableCell>
+            <TableCell align="left">Criada Em</TableCell>
+            <TableCell align="left">Vencimento</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -516,15 +470,17 @@ export function CompaniesManagerGrid(props) {
                 </IconButton>
               </TableCell>
               <TableCell align="left">{row.name || "-"}</TableCell>
-              <TableCell align="left" size="small">{row.email || "-"}</TableCell>
-              <TableCell align="center">{row.phone || "-"}</TableCell>
-              <TableCell align="center">{renderPlan(row)}</TableCell>
-              <TableCell align="center">{i18n.t("compaies.table.money")} {renderPlanValue(row)}</TableCell>
-              {/* <TableCell align="center">{renderCampaignsStatus(row)}</TableCell> */}
-              <TableCell align="center">{renderStatus(row)}</TableCell>
-              <TableCell align="center">{dateToClient(row.createdAt)}</TableCell>
-              <TableCell align="center">{dateToClient(row.dueDate)}<br /><span>{row.recurrence}</span></TableCell>
-              <TableCell align="center">{datetimeToClient(row.lastLogin)}</TableCell>
+              <TableCell align="left">{row.email || "-"}</TableCell>
+              <TableCell align="left">{row.phone || "-"}</TableCell>
+              <TableCell align="left">{renderPlan(row)}</TableCell>
+              <TableCell align="left">{renderCampaignsStatus(row)}</TableCell>
+              <TableCell align="left">{renderStatus(row)}</TableCell>
+              <TableCell align="left">{dateToClient(row.createdAt)}</TableCell>
+              <TableCell align="left">
+                {dateToClient(row.dueDate)}
+                <br />
+                <span>{row.recurrence}</span>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -546,12 +502,9 @@ export default function CompaniesManager() {
     phone: "",
     planId: "",
     status: true,
-    // campaignsEnabled: false,
+    campaignsEnabled: false,
     dueDate: "",
     recurrence: "",
-    password: "",
-    document: "",
-    paymentMethod: ""
   });
 
   useEffect(() => {
@@ -614,24 +567,22 @@ export default function CompaniesManager() {
       phone: "",
       planId: "",
       status: true,
-      // campaignsEnabled: false,
+      campaignsEnabled: false,
       dueDate: "",
       recurrence: "",
-      password: "",
-      document: "",
-      paymentMethod: ""
     }));
   };
 
   const handleSelect = (data) => {
-    // let campaignsEnabled = false;
+    let campaignsEnabled = false;
 
-    // const setting = data.settings.find(
-    //   (s) => s.key.indexOf("campaignsEnabled") > -1
-    // );
-    // if (setting) {
-    //   campaignsEnabled = setting.value === "true" || setting.value === "enabled";
-    // }
+    const setting = data.settings.find(
+      (s) => s.key.indexOf("campaignsEnabled") > -1
+    );
+    if (setting) {
+      campaignsEnabled =
+        setting.value === "true" || setting.value === "enabled";
+    }
 
     setRecord((prev) => ({
       ...prev,
@@ -641,12 +592,9 @@ export default function CompaniesManager() {
       email: data.email || "",
       planId: data.planId || "",
       status: data.status === false ? false : true,
-      // campaignsEnabled,
+      campaignsEnabled,
       dueDate: data.dueDate || "",
       recurrence: data.recurrence || "",
-      password: "",
-      document: data.document || "",
-      paymentMethod: data.paymentMethod || "",
     }));
   };
 

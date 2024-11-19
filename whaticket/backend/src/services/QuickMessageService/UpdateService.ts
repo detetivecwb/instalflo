@@ -6,14 +6,11 @@ interface Data {
   message: string;
   userId: number | string;
   id?: number | string;
-  geral: boolean;
-  mediaPath?: string | null;
-  visao: boolean;
-
+  geral?: boolean;
 }
 
 const UpdateService = async (data: Data): Promise<QuickMessage> => {
-  const { id, shortcode, message, userId, geral, mediaPath, visao } = data;
+  const { id, shortcode, message, userId, geral } = data;
 
   const record = await QuickMessage.findByPk(id);
 
@@ -21,17 +18,11 @@ const UpdateService = async (data: Data): Promise<QuickMessage> => {
     throw new AppError("ERR_NO_TICKETNOTE_FOUND", 404);
   }
 
-  if (!record.geral && record.visao && record.userId !== userId) {
-    throw new AppError("ERR_NO_PERMISSION", 403);
-  }
-
   await record.update({
     shortcode,
     message,
-    // userId,
-    geral,
-    mediaPath,
-    visao
+    userId,
+	geral
   });
 
   return record;

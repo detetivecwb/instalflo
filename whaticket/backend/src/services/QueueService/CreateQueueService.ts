@@ -3,8 +3,6 @@ import AppError from "../../errors/AppError";
 import Queue from "../../models/Queue";
 import Company from "../../models/Company";
 import Plan from "../../models/Plan";
-import Chatbot from "../../models/Chatbot";
-import User from "../../models/User";
 
 interface QueueData {
   name: string;
@@ -13,13 +11,9 @@ interface QueueData {
   greetingMessage?: string;
   outOfHoursMessage?: string;
   schedules?: any[];
-  chatbots?: Chatbot[];
   orderQueue?: number;
-  ativarRoteador?: boolean;
-  tempoRoteador: number;
   integrationId?: number;
-  fileListId?: number;
-  closeTicket?: boolean;
+  promptId?: number;
 }
 
 const CreateQueueService = async (queueData: QueueData): Promise<Queue> => {
@@ -92,22 +86,7 @@ const CreateQueueService = async (queueData: QueueData): Promise<Queue> => {
     throw new AppError(err.message);
   }
 
-  const queue = await Queue.create(queueData, {
-    include: [
-      {
-        model: Chatbot,
-        as: "chatbots",
-        include: [
-          {
-            model: User,
-            as: "user"
-          }
-        ],
-        // attributes: ["id", "name", "greetingMessage", "isAgent"],
-        order: [[{ model: Chatbot, as: "chatbots" }, "id", "asc"]]
-      }
-    ]
-  });
+  const queue = await Queue.create(queueData);
 
   return queue;
 };

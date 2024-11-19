@@ -22,7 +22,7 @@ import { i18n } from "../../translate/i18n";
 
 import api from "../../services/api";
 import toastError from "../../errors/toastError";
-import QueueSelect from "../QueueSelect";
+import QueueSelectCustom from "../QueueSelectCustom";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import { Can } from "../Can";
 
@@ -217,7 +217,8 @@ const ModalUsers = ({ open, onClose, userId, companyId }) => {
                   role={loggedInUser.profile}
                   perform="user-modal:editQueues"
                   yes={() => (
-                    <QueueSelect
+                    <QueueSelectCustom
+                      companyId={companyId}
                       selectedQueueIds={selectedQueueIds}
                       onChange={(values) => setSelectedQueueIds(values)}
                     />

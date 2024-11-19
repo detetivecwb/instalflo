@@ -3,8 +3,6 @@ import AppError from "../../errors/AppError";
 import Campaign from "../../models/Campaign";
 import ContactList from "../../models/ContactList";
 import Whatsapp from "../../models/Whatsapp";
-import User from "../../models/User";
-import Queue from "../../models/Queue";
 
 interface Data {
   name: string;
@@ -23,10 +21,7 @@ interface Data {
   confirmationMessage3?: string;
   confirmationMessage4?: string;
   confirmationMessage5?: string;
-  userId: number | string;
-  queueId: number | string;
-  statusTicket: string;
-  openTicket: string;
+  fileListId: number;
 }
 
 const CreateService = async (data: Data): Promise<Campaign> => {
@@ -53,10 +48,8 @@ const CreateService = async (data: Data): Promise<Campaign> => {
   await record.reload({
     include: [
       { model: ContactList },
-      { model: Whatsapp, attributes: ["id", "name"] },
-      { model: User, attributes: ["id", "name"] },
-      { model: Queue, attributes: ["id", "name"] },
-        ]
+      { model: Whatsapp, attributes: ["id", "name"] }
+    ]
   });
 
   return record;
