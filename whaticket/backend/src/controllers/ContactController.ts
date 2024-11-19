@@ -131,6 +131,8 @@ export const index = async (req: Request, res: Response): Promise<Response> => {
   const { searchParam, pageNumber, contactTag: tagIdsStringified, isGroup } = req.query as IndexQuery;
   const { id: userId, companyId } = req.user;
 
+  console.log("index", { companyId, userId, searchParam })
+
   let tagsIds: number[] = [];
 
   if (tagIdsStringified) {
@@ -156,6 +158,8 @@ export const getContact = async (
   const { name, number } = req.body as IndexGetContactQuery;
   const { companyId } = req.user;
 
+  console.log("getContact", { companyId, name, number })
+
   const contact = await GetContactService({
     name,
     number,
@@ -169,6 +173,8 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
   const { companyId } = req.user;
   const newContact: ContactData = req.body;
   const newRemoteJid = newContact.number;
+
+  console.log("store", { companyId, newContact })
 
   const findContact = await Contact.findOne({
     where: {
@@ -367,8 +373,10 @@ export const getContactProfileURL = async (req: Request, res: Response) => {
   const { number } = req.params
   const { companyId } = req.user;
 
+  console.log("getContactProfileURL", { number, companyId })
   if (number) {
     const validNumber = await CheckContactNumber(number, companyId);
+
 
     const profilePicUrl = await GetProfilePicUrl(validNumber, companyId);
 
@@ -386,100 +394,102 @@ export const getContactProfileURL = async (req: Request, res: Response) => {
         profilePicUrl: profilePicUrl
       }
     }
+    
     return res.status(200).json(obj);
   }
-};
 
-export const getContactVcard = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
-  const { name, number } = req.query as IndexGetContactQuery;
-  const { companyId } = req.user;
+  };
 
-  let vNumber = number;
-  const numberDDI = vNumber.toString().substr(0, 2);
-  const numberDDD = vNumber.toString().substr(2, 2);
-  const numberUser = vNumber.toString().substr(-8, 8);
+  export const getContactVcard = async (
+    req: Request,
+    res: Response
+  ): Promise<Response> => {
+    const { name, number } = req.query as IndexGetContactQuery;
+    const { companyId } = req.user;
 
-  if (numberDDD <= '30' && numberDDI === '55') {
-    console.log("menor 30")
-    vNumber = `${numberDDI + numberDDD + 9 + numberUser}@s.whatsapp.net`;
-  } else if (numberDDD > '30' && numberDDI === '55') {
-    console.log("maior 30")
-    vNumber = `${numberDDI + numberDDD + numberUser}@s.whatsapp.net`;
-  } else {
-    vNumber = `${number}@s.whatsapp.net`;
-  }
+    let vNumber = number;
+    const numberDDI = vNumber.toString().substr(0, 2);
+    const numberDDD = vNumber.toString().substr(2, 2);
+    const numberUser = vNumber.toString().substr(-8, 8);
+
+    if (numberDDD <= '30' && numberDDI === '55') {
+      console.log("menor 30")
+      vNumber = `${numberDDI + numberDDD + 9 + numberUser}@s.whatsapp.net`;
+    } else if (numberDDD > '30' && numberDDI === '55') {
+      console.log("maior 30")
+      vNumber = `${numberDDI + numberDDD + numberUser}@s.whatsapp.net`;
+    } else {
+      vNumber = `${number}@s.whatsapp.net`;
+    }
 
 
-  const contact = await GetContactService({
-    name,
-    number,
-    companyId
-  });
-
-  return res.status(200).json(contact);
-};
-
-export const getContactTags = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
-  const { contactId } = req.params;
-
-  const contactTags = await FindContactTags({ contactId });
-
-  let tags = false;
-
-  if (contactTags.length > 0) {
-    tags = true;
-  }
-
-  return res.status(200).json({ tags: tags });
-
-}
-
-export const toggleDisableBot = async (req: Request, res: Response): Promise<Response> => {
-  var { contactId } = req.params;
-  const { companyId } = req.user;
-  const contact = await ToggleDisableBotContactService({ contactId });
-
-  const io = getIO();
-  io.of(String(companyId))
-    .emit(`company-${companyId}-contact`, {
-      action: "update",
-      contact
+    const contact = await GetContactService({
+      name,
+      number,
+      companyId
     });
 
-  return res.status(200).json(contact);
-};
+    return res.status(200).json(contact);
+  };
 
-export const updateContactWallet = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
-  const { wallets } = req.body;
-  const { contactId } = req.params;
-  const { companyId } = req.user;
+  export const getContactTags = async (
+    req: Request,
+    res: Response
+  ): Promise<Response> => {
+    const { contactId } = req.params;
 
-  const contact = await UpdateContactWalletsService({
-    wallets,
-    contactId,
-    companyId
-  });
+    const contactTags = await FindContactTags({ contactId });
 
-  return res.status(200).json(contact);
-};
+    let tags = false;
 
-export const listWhatsapp = async (req: Request, res: Response): Promise<Response> => {
+    if (contactTags.length > 0) {
+      tags = true;
+    }
 
-  const { name } = req.query as unknown as SearchContactParams;
-  const { companyId } = req.user;
+    return res.status(200).json({ tags: tags });
 
-  const contactsAll = await SimpleListService({ name, companyId });
+  }
 
-  const contacts = contactsAll.filter(contact => contact.channel == "whatsapp");
+  export const toggleDisableBot = async (req: Request, res: Response): Promise<Response> => {
+    var { contactId } = req.params;
+    const { companyId } = req.user;
+    const contact = await ToggleDisableBotContactService({ contactId });
 
-  return res.json(contacts);
-};
+    const io = getIO();
+    io.of(String(companyId))
+      .emit(`company-${companyId}-contact`, {
+        action: "update",
+        contact
+      });
+
+    return res.status(200).json(contact);
+  };
+
+  export const updateContactWallet = async (
+    req: Request,
+    res: Response
+  ): Promise<Response> => {
+    const { wallets } = req.body;
+    const { contactId } = req.params;
+    const { companyId } = req.user;
+
+    const contact = await UpdateContactWalletsService({
+      wallets,
+      contactId,
+      companyId
+    });
+
+    return res.status(200).json(contact);
+  };
+
+  export const listWhatsapp = async (req: Request, res: Response): Promise<Response> => {
+
+    const { name } = req.query as unknown as SearchContactParams;
+    const { companyId } = req.user;
+
+    const contactsAll = await SimpleListService({ name, companyId });
+
+    const contacts = contactsAll.filter(contact => contact.channel == "whatsapp");
+
+    return res.json(contacts);
+  };

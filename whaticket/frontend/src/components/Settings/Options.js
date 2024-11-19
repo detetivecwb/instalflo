@@ -136,7 +136,7 @@ export default function Options(props) {
   const [loadingDirectTicketsToWallets, setLoadingDirectTicketsToWallets] = useState(false)
 
   //MENSAGENS CUSTOMIZADAS
-  const [transferMessage, setTransferMessage] = useState("");
+  const [transferMessage, setTransferMessage] = useState("Seu Atendimento foi Transferido para o setor ${queue.name},Aguarde atendimento por favor...");
   const [loadingTransferMessage, setLoadingTransferMessage] = useState(false);
 
   const [greetingAcceptedMessage, setGreetingAcceptedMessage] = useState("");

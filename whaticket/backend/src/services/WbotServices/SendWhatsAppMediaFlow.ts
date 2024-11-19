@@ -1,4 +1,4 @@
-import { WAMessage, AnyMessageContent } from "@whiskeysockets/baileys";
+import { WAMessage, AnyMessageContent, WAPresence } from "@whiskeysockets/baileys";
 import * as Sentry from "@sentry/node";
 import fs from "fs";
 import { exec } from "child_process";
@@ -60,6 +60,24 @@ const nameFileDiscovery = (pathMedia: string) => {
   return first.split(".")[0]
 }
 
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+export const typeSimulation = async (ticket: Ticket, presence: WAPresence) => {
+
+  const wbot = await GetTicketWbot(ticket);
+
+  let contact = await Contact.findOne({
+    where: {
+      id: ticket.contactId,
+    }
+  });
+
+  await wbot.sendPresenceUpdate(presence, `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`);
+  await delay(5000);
+  await wbot.sendPresenceUpdate('paused', `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`);
+
+}
+
 const SendWhatsAppMediaFlow = async ({
   media,
   ticket,
@@ -74,8 +92,8 @@ const SendWhatsAppMediaFlow = async ({
     const pathMedia = media
 
     const typeMessage = mimetype.split("/")[0];
-    const mediaName= nameFileDiscovery(media)
-    
+    const mediaName = nameFileDiscovery(media)
+
     let options: AnyMessageContent;
 
     if (typeMessage === "video") {
@@ -109,7 +127,7 @@ const SendWhatsAppMediaFlow = async ({
         fileName: mediaName,
         mimetype: mimetype
       };
-     } else if (typeMessage === "application") {
+    } else if (typeMessage === "application") {
       options = {
         document: fs.readFileSync(pathMedia),
         caption: body,

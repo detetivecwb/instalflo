@@ -7,7 +7,7 @@ const GetProfilePicUrl = async (
   companyId: number,
   contact?: Contact,
 ): Promise<string> => {
-  const defaultWhatsapp = await GetDefaultWhatsApp(companyId);
+  const defaultWhatsapp = await GetDefaultWhatsApp(null, companyId);
 
   const wbot = getWbot(defaultWhatsapp.id);
 

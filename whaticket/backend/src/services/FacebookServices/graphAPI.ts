@@ -53,7 +53,7 @@ export const showTypingIndicator = async (
 
     return data;
   } catch (error) {
-    //console.log(error);
+    console.log(error);
   }
 
 }
@@ -102,7 +102,7 @@ export const sendAttachmentFromUrl = async (
 
     return data;
   } catch (error) {
-    //console.log(error);
+    console.log(error);
   }
 };
 

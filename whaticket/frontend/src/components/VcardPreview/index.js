@@ -67,6 +67,7 @@ const VcardPreview = ({ contact, numbers, queueId, whatsappId }) => {
                         return
                     }
                     const number = numbers.replace(/\D/g, "");
+                    
                     const getData = await api.get(`/contacts/profile/${number}`);
 
                     if (getData.data.contactId && getData.data.contactId !== 0) {
@@ -78,6 +79,7 @@ const VcardPreview = ({ contact, numbers, queueId, whatsappId }) => {
                         }
 
                         setContact(obj)
+                  
                     } else {
                         let contactObj = {
                             name: contact,
@@ -89,7 +91,7 @@ const VcardPreview = ({ contact, numbers, queueId, whatsappId }) => {
                         const { data } = await api.post("/contacts", contactObj);
                         setContact(data)
                     }
-
+            
                 } catch (err) {
                     console.log(err)
                     toastError(err);

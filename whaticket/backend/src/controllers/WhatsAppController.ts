@@ -132,6 +132,10 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     });
   }
 
+  console.log("================ WhatsAppController ==============")
+  console.log(req.body)
+  console.log("==================================================")
+
   const { whatsapp, oldDefaultWhatsapp } = await CreateWhatsAppService({
     name,
     status,

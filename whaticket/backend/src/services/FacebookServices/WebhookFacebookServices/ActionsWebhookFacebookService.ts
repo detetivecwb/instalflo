@@ -116,9 +116,7 @@ export const ActionsWebhookFacebookService = async (
                 where: { id: idTicket }
             });
             if (ticketInit.status === "closed") {
-                if (numberPhrase === null || numberPhrase === undefined) {
-                    break;
-                }
+               break
             } else {
                 await ticketInit.update({
                     dataWebhook: {
@@ -163,7 +161,8 @@ export const ActionsWebhookFacebookService = async (
             console.log("====================================")
 
             selectedQueueid = queue.id;
-            await updateQueueId(ticket, companyId, queue.id)
+            console.log({ selectedQueueid })
+            //await updateQueueId(ticket, companyId, queue.id)
 
         }
 
